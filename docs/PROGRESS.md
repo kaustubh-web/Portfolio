@@ -3,7 +3,7 @@
 - [x] Phase 0 — Specs, plan, design system
 - [x] Phase 1 — Foundation
 - [x] Phase 2 — Preloader + Hero + Marquee
-- [ ] Phase 3 — Selected Work
+- [x] Phase 3 — Selected Work
 - [ ] Phase 4 — Case Studies
 - [ ] Phase 5 — Remaining Sections
 - [ ] Phase 6 — Signature Interactions
@@ -91,3 +91,53 @@ Each phase appends one block, newest last:
   - On this Windows machine `npm run build` from Git Bash once failed with a Turbopack worker spawn error (0xc0000142) after many processes were open; the same build from PowerShell passed.
   - ⌘K still only dispatches `kb:open-palette` (Phase 6).
 - Placeholders added: none new in `content/site.ts`. Still pending and now visible in the hero: socials ×3, resume PDF.
+
+### Phase 3 — Selected Work (2026-11-02)
+- Built: 01 / WORK section (label row with `04 entries · by index`, RevealText title) and the card stack. Desktop with motion allowed: a 100svh stage kept in place with CSS `position: sticky` inside a tall track. Its GSAP timeline is scrubbed by ScrollTrigger, so each card slides up over the last (one viewport of scroll per card, plus a 0.35 viewport hold). The covered card scales to .92 and dims to 0.6, and its header strip peeks above the next. Phones and reduced motion: a plain list with FadeIn reveals and the info panel below the video.
+- Cards: a header strip (index / slug, `● deployed`, magnetic Live ↗ / GitHub ↗), a true 16:9 preview, and a solid `--surface` panel (title, pitch, stack badges, "how it works" Motion layout expand that grows upward over the video). A `view ↗` accent label shows on hover or keyboard focus. The whole card links to `/work/[slug]`. Everything is read from `content/site.ts`.
+- Videos:
+  - Sources attach only once a card comes within 25% of the viewport (IntersectionObserver) and play only while at least 25% is visible.
+  - Videos pause offscreen and while covered in the stack.
+  - Every video has a visible pause/play control. A blocked autoplay falls back to play.
+  - Under reduced motion: poster plus play button, and nothing downloads until play is pressed.
+  - Missing files: the poster is resolved on the server at prerender, so no 404s are requested and a tokened poster renders instead (16×9 hairline grid, index numeral, `preview · <slug>`).
+  - A broken file (decode error on the last source) also falls back to the poster.
+- Verified (headless Chrome via CDP, dev and production build):
+  - Zero console errors or warnings. No horizontal overflow at 360, 768 and 1440. Every work tap target is at least 44px.
+  - Stack positions at every step: card tops 88 / 132 / 176 / 220px at 1440×900, and it unpins cleanly.
+  - CLS 0 while scrolling through the stack (ScrollTrigger `pin` measured 1.84; see DECISIONS).
+  - Production frame timing over a full stack pass at 1× CPU: p50 16.7ms, p95 16.8ms across 5 runs, with about 4 frames over 34ms (a card's video starting). At 2× CPU throttle: p95 about 33ms, the same as a plain section in the same run (headless, software compositing).
+  - Network, using throwaway clips recorded in headless Chrome and then deleted: one video request per card as it arrives (webm picked over mp4), none at once.
+  - Covered cards pause. The pause choice survives scrolling away and back.
+  - Reduced motion: zero video bytes until play.
+  - Expand animates; on phones the next card glides. Keyboard Tab through the stack settles each card on top, with the focus ring visible.
+  - Light theme checked. `npm run build`, `npm run lint` and `npx tsc --noEmit` are clean, and `/` still prerenders static.
+- Key files:
+  - `components/sections/work.tsx` (server): section header; resolves media per project.
+  - `components/work/work-stack.tsx`: `STAGE_QUERY`, track/stage, GSAP timeline, the `active` (top card) state, and keyboard focus → scroll to that card.
+  - `components/work/project-card.tsx`: card (memoized), header, links, badges, panel + layout expand, dim overlay.
+  - `components/work/preview-video.tsx`: poster (next/image or `TokenPoster`), video, play/pause control.
+  - `hooks/use-lazy-video.ts`: IO lazy-attach + visible play/pause + hold + intent. Reuse for the Phase 4 case-study hero video.
+  - `lib/media.ts`: `resolveMedia()` (server-only, `fs.existsSync` under `public/`).
+  - `app/globals.css`: new "Selected Work" block: `--work-peek`, `.work-track`, `.work-stack`, `.work-slot`, `.work-card`, `.media-poster`.
+- Conventions introduced:
+  - Pinned scroll scenes use CSS `sticky` inside a track sized in viewports, with ScrollTrigger `scrub` on the track (`start: "top top"`, `end: "bottom bottom"`). Not `pin`: it registers layout shift and re-parents React DOM.
+  - The staged query is mirrored in CSS (`@media (width >= 64rem) and (prefers-reduced-motion: no-preference)`), so SSR markup already has the right layout. React reads it through `useMediaQuery(STAGE_QUERY)`.
+  - Stretched-link cards: the link is `absolute inset-0 z-1`. Overlaid layers are `pointer-events-none z-2`, and their links and buttons re-enable `pointer-events-auto`.
+  - `data-cursor="view"` marks the card link for the Phase 6 cursor.
+  - Media paths go through `resolveMedia()` on the server before reaching client components.
+  - Don't use `[data-slot]` as a selector: shadcn components set `data-slot` themselves. Work slots use `data-stack-slot`.
+  - The `cn` package treats custom font sizes (`text-meta`, `text-lead`, …) as colors: `cn("text-meta", "text-fg-muted")` drops `text-meta`. Use `label-meta`, or keep sizes out of `cn()` calls that also set a text color.
+- Known issues:
+  - `/work/[slug]` doesn't exist until Phase 4, so the card links 404. `prefetch={false}` is set on the card link with a `TODO(phase 4)`. Remove it when the route exists.
+  - Media existence is checked at prerender: after adding files to `public/work/`, rebuild (dev picks them up on refresh).
+  - Previews must be 16:9: the frame is fixed, and `object-cover` crops anything else.
+  - Keyboard focus moves the stack only for `:focus-visible` focus. A programmatic `focus()` after a mouse click doesn't (relevant if the Phase 6 palette focuses cards: scroll with `lenis.scrollTo` instead).
+  - Frame timing was measured headless, without GPU compositing. Re-check on a real mid-range laptop in Phase 7.
+  - Dev only: Turbopack once kept serving stale `globals.css` after an edit, and `touch` didn't help. A real content change to the file, or restarting `next dev`, did.
+- Placeholders added (assets, all referenced from `content/site.ts` via `media(slug)`; each renders the tokened poster until present):
+  - `public/work/forgefort.{mp4,webm,webp}`
+  - `public/work/price-optimizer.{mp4,webm,webp}`
+  - `public/work/ticket-tracker.{mp4,webm,webp}`
+  - `public/work/backend-ledger.{mp4,webm,webp}`
+  - Still pending and now visible on the cards: `repoUrl` ×4 (GitHub ↗ links resolve relative → 404).

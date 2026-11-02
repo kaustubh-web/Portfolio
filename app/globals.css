@@ -550,3 +550,74 @@
     opacity: 0;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Selected Work (components/work/). Cards are a plain list until the
+ * staged query (STAGE_QUERY in work-stack.tsx) holds: then the list is a
+ * 100svh sticky stage inside a track one viewport taller per card (plus
+ * the hold), cards sit at their slot (each one header strip lower than the
+ * last) and wait below the stage, clipped, until the scrubbed timeline
+ * slides them in. Width keeps the whole stack inside the viewport.
+ * ------------------------------------------------------------------ */
+:root {
+  /* Card header strip: what peeks out of the stack. */
+  --work-peek: 2.75rem;
+}
+
+@media (width >= 64rem) {
+  .work-stack {
+    --work-top: calc(var(--nav-h) + var(--space-5));
+    --work-media-max: min(
+      82svh - var(--work-peek),
+      100svh - var(--work-top) - var(--space-5) - var(--work-n, 1) * var(--work-peek)
+    );
+  }
+
+  .work-card {
+    width: min(100%, var(--work-media-max) * 16 / 9);
+    margin-inline: auto;
+  }
+}
+
+@media (width >= 64rem) and (prefers-reduced-motion: no-preference) {
+  .work-track {
+    height: calc(100svh * (var(--work-n, 1) + var(--work-hold, 0)));
+  }
+
+  .work-stack {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: clip;
+  }
+
+  .work-slot {
+    position: absolute;
+    inset-inline: 0;
+    top: calc(var(--work-top) + var(--i, 0) * var(--work-peek));
+    will-change: transform;
+  }
+
+  .work-slot:not(:first-child) {
+    transform: translateY(100svh);
+  }
+
+  /* Scrubbed every frame: own layers, so the timeline only recomposites
+     (no repaint of the card and its video). */
+  .work-slot [data-card] {
+    will-change: transform;
+  }
+
+  .work-slot [data-dim] {
+    will-change: opacity;
+  }
+}
+
+/* Tokened poster: a 16×9 test-card grid in hairline tokens. */
+.media-poster {
+  background-color: var(--surface-2);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: calc(100% / 16) calc(100% / 9);
+}
