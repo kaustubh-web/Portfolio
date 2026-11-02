@@ -1,0 +1,275 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant light (&:is(.light *));
+
+/* ------------------------------------------------------------------ *
+ * Design tokens (docs/PLAN.md → Design System). Dark is the default;
+ * next-themes puts `.light` / `.dark` on <html> before first paint.
+ * ------------------------------------------------------------------ */
+:root {
+  color-scheme: dark;
+
+  --bg: #0b0b0c;
+  --surface: #121214;
+  --surface-2: #19191b;
+  --fg: #edeae3;
+  --fg-muted: #8a867e;
+  --fg-subtle: #55524d;
+  --line: rgb(237 234 227 / 0.08);
+  --line-strong: rgb(237 234 227 / 0.16);
+  --grid-line: rgb(237 234 227 / 0.04);
+  --accent: #ff5b1f;
+  --accent-ink: #ff5b1f;
+  --on-accent: #0b0b0c;
+  --grain-opacity: 0.025;
+
+  /* spacing (4px base) — design steps, for hand-written CSS */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+  --space-10: 8rem;
+  --space-11: 12rem;
+  --space-section: clamp(6rem, 12vw, 12rem);
+
+  /* grid: 4 / 8 / 12 cols */
+  --grid-cols: 4;
+  --grid-margin: 1rem;
+  --grid-gap: 1rem;
+  --grid-max: 1680px;
+  --nav-h: 3.5rem;
+
+  /* motion */
+  --dur-instant: 100ms;
+  --dur-fast: 180ms;
+  --dur-base: 320ms;
+  --dur-slow: 640ms;
+  --dur-slower: 900ms;
+
+  /* z-index */
+  --z-content: 0;
+  --z-grid: 1;
+  --z-nav: 50;
+  --z-cursor: 100;
+  --z-overlay: 200;
+  --z-preloader: 300;
+  --z-curtain: 400;
+  --z-grain: 500;
+
+  /* shadcn/ui semantic aliases → design tokens */
+  --background: var(--bg);
+  --foreground: var(--fg);
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+  --primary: var(--fg);
+  --primary-foreground: var(--bg);
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--fg);
+  --muted: var(--surface-2);
+  --muted-foreground: var(--fg-muted);
+  --accent-foreground: var(--on-accent);
+  --destructive: var(--accent-ink);
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--accent);
+  --radius: 4px;
+}
+
+:root.light {
+  color-scheme: light;
+
+  --bg: #f2efe8;
+  --surface: #eae6dd;
+  --surface-2: #e1dcd1;
+  --fg: #141413;
+  --fg-muted: #6b675f;
+  --fg-subtle: #a39e94;
+  --line: rgb(20 20 19 / 0.1);
+  --line-strong: rgb(20 20 19 / 0.2);
+  --grid-line: rgb(20 20 19 / 0.05);
+  --accent-ink: #b83a0b;
+  --grain-opacity: 0.03;
+}
+
+@media (width >= 48rem) {
+  :root {
+    --grid-cols: 8;
+    --grid-margin: 2rem;
+    --grid-gap: 1.25rem;
+  }
+}
+
+@media (width >= 64rem) {
+  :root {
+    --grid-cols: 12;
+    --grid-margin: clamp(2rem, 3vw, 3rem);
+    --grid-gap: 1.5rem;
+    --nav-h: 4rem;
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Tailwind theme
+ * ------------------------------------------------------------------ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-grid-line: var(--grid-line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-on-accent: var(--on-accent);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-display: var(--font-instrument-serif), ui-serif, Georgia, serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-heading: var(--font-display);
+
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: var(--radius);
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
+}
+
+@theme {
+  --breakpoint-xl: 90rem;
+
+  --text-hero: clamp(3.5rem, 18vw, 5rem);
+  --text-hero--line-height: 0.86;
+  --text-hero--letter-spacing: -0.02em;
+  --text-display-xl: clamp(2.75rem, 7vw, 7.5rem);
+  --text-display-xl--line-height: 0.95;
+  --text-display-xl--letter-spacing: -0.015em;
+  --text-display-l: clamp(2.25rem, 4.5vw, 4.5rem);
+  --text-display-l--line-height: 1;
+  --text-display-l--letter-spacing: -0.01em;
+  --text-display-m: clamp(1.75rem, 3vw, 3rem);
+  --text-display-m--line-height: 1.05;
+  --text-h3: clamp(1.25rem, 1.6vw, 1.5rem);
+  --text-h3--line-height: 1.1;
+  --text-h3--font-weight: 500;
+  --text-lead: clamp(1.0625rem, 1.2vw, 1.25rem);
+  --text-lead--line-height: 1.5;
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-meta: clamp(0.75rem, 0.7rem + 0.15vw, 0.8125rem);
+  --text-meta--line-height: 1.4;
+  --text-meta--letter-spacing: 0.08em;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+@layer base {
+  @media (width >= 64rem) {
+    :root {
+      --text-hero: clamp(5rem, 12vw, 14rem);
+    }
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-fg text-body antialiased;
+    min-height: 100svh;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion: CSS transitions/animations collapse. JS animations
+     (motion/react, GSAP) branch on useReducedMotion() instead. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ *
+ * Layout utilities
+ * ------------------------------------------------------------------ */
+@utility container-site {
+  width: 100%;
+  max-width: var(--grid-max);
+  margin-inline: auto;
+  padding-inline: var(--grid-margin);
+}
+
+@utility grid-site {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+}
+
+/* `01 / WORK` — mono, uppercase system metadata */
+@utility label-meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-meta);
+  line-height: var(--text-meta--line-height);
+  letter-spacing: var(--text-meta--letter-spacing);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility section-pad {
+  padding-block: var(--space-section);
+}
