@@ -6,6 +6,8 @@ import { site } from "@/content/site";
 import { Providers } from "@/components/providers/providers";
 import { Navbar } from "@/components/layout/navbar";
 import { GrainOverlay, GridOverlay } from "@/components/layout/overlays";
+import { Preloader } from "@/components/layout/preloader";
+import { bootScript } from "@/lib/boot-config";
 
 const display = Instrument_Serif({
   variable: "--font-instrument-serif",
@@ -36,12 +38,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      // next-themes sets the theme class before paint.
+      // next-themes and the boot script set attributes before paint.
       suppressHydrationWarning
       className={`${display.variable} ${sans.variable} ${mono.variable}`}
     >
+      <head>
+        {/* Decides before first paint whether the boot preloader runs. */}
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+      </head>
       <body>
         <Providers>
+          <Preloader />
           <a
             href="#main"
             className="label-meta fixed top-2 left-2 z-(--z-overlay) -translate-y-[200%] bg-accent px-3 py-2 text-on-accent focus-visible:translate-y-0"

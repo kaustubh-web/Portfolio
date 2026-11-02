@@ -37,6 +37,10 @@ export const spring = {
   layout: { type: "spring", bounce: 0, duration: 0.45 },
 } as const;
 
+/** Hero graph run, in ms: per Kahn level, per edge fill, and the start
+    offset from the hero t0 (docs/PLAN.md → hero timeline). */
+export const graphRun = { nodeMs: 180, edgeMs: 220, delayMs: 600 } as const;
+
 /** Magnetic pull: fraction of the pointer offset, capped in px. */
 export const magnetic = { pull: 0.3, max: 12 } as const;
 

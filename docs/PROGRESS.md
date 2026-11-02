@@ -2,7 +2,7 @@
 
 - [x] Phase 0 — Specs, plan, design system
 - [x] Phase 1 — Foundation
-- [ ] Phase 2 — Preloader + Hero + Marquee
+- [x] Phase 2 — Preloader + Hero + Marquee
 - [ ] Phase 3 — Selected Work
 - [ ] Phase 4 — Case Studies
 - [ ] Phase 5 — Remaining Sections
@@ -63,3 +63,31 @@ Each phase appends one block, newest last:
   - `npm audit` reports 16 moderate advisories in scaffold dependencies; not addressed.
   - Cache Components is on (scaffold default): server components can't read time/randomness outside `<Suspense>`, and visited routes stay mounted in `<Activity>`, so effects must clean up (relevant to Phases 4 and 6).
 - Placeholders added (all in `content/site.ts`): `meta.url`; socials GitHub/LinkedIn/LeetCode; `repoUrl` ×4; case-study `role` / `problem` / `approach` / `hardParts` / `result` ×4; snippet `code` `[[REPLACE WITH REAL CODE]]` ×5; archive `year` ×5, `href` ×5, Smart Resume Screener `stack`; Now `building`, `learning`, `updated`. Asset paths referenced but not yet present: `/work/<slug>.{mp4,webm,webp}`, `/archive/*.webp`, `/Kaustubh_Bramhe_Resume.pdf`. Graph tooltips, principle snippets and architecture diagrams are written from the spec as editable defaults.
+
+### Phase 2 — Preloader + Hero + Marquee (2026-11-02)
+- Built: boot preloader (mono boot log, stepped progress bar, CSS-counter timer, accent curtain wipe; ≤1.2s, once per session, skippable via Enter/Esc/Space/button/tap, off under reduced motion); hero (split-letter masked name reveal, role line wipe, status chip with 2s pulse, live IST clock, magnetic CTAs: Resume ↗ new tab, GitHub/LinkedIn/LeetCode, copy email + Sonner toast); `/resume` → PDF redirect (307); pipeline graph (real Kahn's algorithm → layered layout → dataflow schedule; edges fill and pulse while data is in flight, one log line per node, tooltips on hover/focus/tap, re-run; left→right in containers ≥30rem, top→bottom below; completed static state under reduced motion); stack marquee band; scroll cue.
+- Verified (headless Chrome via CDP; dev + production build): zero console errors/warnings; no horizontal overflow at 360/768/1024/1440; every hero tap target ≥44px; CLS ≈ 0.0004; preloader shows on first visit only and skip restarts the hero reveal cleanly; graph logs 8 nodes in Kahn order (idea, design, frontend, backend, db, llm, test, ship), full run 2.18s; tooltip, toast, light theme, reduced motion (completed graph, static marquee) all checked. `npm run build`, `npm run lint`, `npx tsc --noEmit` clean; `/` prerenders static.
+- LCP (production build, LCP element = role line): desktop repeat visit 0.58s, desktop first visit (incl. preloader) 1.75s; Slow-4G network only 1.24–1.41s; Slow-4G + 4× CPU 1.7–2.3s and up to ~4.5s in a noisier run — see Known issues.
+- Key files:
+  - `lib/boot-config.ts` — boot timings + the inline `bootScript` (server-safe; inlined in `<head>` by `app/layout.tsx`).
+  - `hooks/use-boot.ts` — boot store (`useBoot`, `getBoot`, `skipBoot`): phase + hero t0 (`heroStart`, performance.now()).
+  - `components/layout/preloader.tsx` — preloader markup + skip handling (timeline is CSS).
+  - `components/sections/hero.tsx` (server), `components/hero/hero-actions.tsx`, `components/hero/pipeline-graph.tsx`, `components/sections/stack-band.tsx`.
+  - `lib/graph/` — `kahn.ts` (Kahn's algorithm, levels + order, cycle/unknown-node errors), `layout.ts` (layered layout with waypoints for long edges + barycenter ordering; axis-free), `schedule.ts` (dataflow timing + `formatRunTime`).
+  - `components/shared/live-clock.tsx` — shared-ticker IST clock (reuse in Phase 5 Now).
+  - `lib/clipboard.ts` — `copyText` (with execCommand fallback) + `copyEmail` (toast). Reuse in Phases 5–6.
+  - `app/globals.css` — new "Boot preloader + hero timeline" block: `--boot-*`, `--hero-t0`, `.boot*`, `.hero-letter`, `.hero-wipe`, `.hero-in`, `.status-dot`, `.edge-fill`, `.edge-pulse`, `.node-pulse`.
+  - `lib/motion.ts` — `graphRun` (nodeMs 180, edgeMs 220, delayMs 600). `next.config.ts` — `/resume` redirect.
+- Conventions introduced:
+  - Hero entrances are CSS: `hero-in` (fade + rise) / `hero-wipe` / `hero-letter`, offset with `style={{"--d": "300ms"}}` from `--hero-t0` (0 normally, 1000ms when the boot runs). On skip, `html[data-boot="skip"]` swaps to duplicate `*-skip` keyframes so the animations restart at "now"; keep the duplicates in sync.
+  - `html[data-boot]` is the boot contract: set pre-paint by the inline script, re-applied by `Preloader` in a layout effect (dev Strict Mode resets `<html>` attributes). JS that follows the hero timeline reads `useBoot().heroStart`.
+  - LCP-critical text must not be revealed by compositor-only animation (opacity or transform): Chrome records it only at the next main-thread paint. Use a pure `clip-path` wipe (no transform in the same keyframes), or no entrance.
+  - Graph orientation is a container query (`@container/graph`, `@min-[30rem]/graph:`), so SSR markup is already correct; node positions are CSS vars (`--lv`, `--cr`) on normalized 0–1 coordinates.
+  - Pure graph/time logic lives in `lib/graph/` with no React; components only render it.
+- Known issues:
+  - LCP under Slow-4G + 4× CPU can exceed 2s: the role-line wipe runs on the main thread, which hydration keeps busy. Fix if Lighthouse (Phase 7) flags it: drop the role line's entrance (render it static) so LCP = FCP. First-visit LCP also includes the ≤1.2s preloader by spec, so it cannot drop below ~FCP + 1.3s on slow devices.
+  - Touch: tapping a graph node opens its tooltip; tapping elsewhere closes it (no toggle). Not tested on a real device.
+  - The hero shows the `[[PLACEHOLDER]]` social links (relative hrefs → 404 in a new tab) and the Resume CTA points at `/Kaustubh_Bramhe_Resume.pdf`, which isn't in `public/` yet (404).
+  - On this Windows machine `npm run build` from Git Bash once failed with a Turbopack worker spawn error (0xc0000142) after many processes were open; the same build from PowerShell passed.
+  - ⌘K still only dispatches `kb:open-palette` (Phase 6).
+- Placeholders added: none new in `content/site.ts`. Still pending and now visible in the hero: socials ×3, resume PDF.

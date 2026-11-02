@@ -273,3 +273,280 @@
 @utility section-pad {
   padding-block: var(--space-section);
 }
+
+/* ------------------------------------------------------------------ *
+ * Boot preloader + hero timeline. Pure CSS so neither waits for
+ * hydration: the inline boot script (lib/boot-config.ts) sets
+ * html[data-boot="run"] before first paint. Timings mirror
+ * lib/boot-config.ts; `skip` swaps keyframe names to restart at t0 = now.
+ * ------------------------------------------------------------------ */
+@property --boot-cs {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+:root {
+  --boot-log: 700ms;
+  --boot-reveal: 1000ms;
+  --boot-total: 1200ms;
+  --boot-skip: 320ms;
+  /* Hero timeline t0: after the boot when it runs, else the first frame. */
+  --hero-t0: 0ms;
+}
+
+:root[data-boot="run"] {
+  --hero-t0: var(--boot-reveal);
+}
+
+.boot {
+  display: none;
+}
+
+:root[data-boot="run"] .boot,
+:root[data-boot="skip"] .boot {
+  display: block;
+}
+
+:root[data-boot="run"] .boot {
+  animation: boot-gone 1ms linear var(--boot-total) forwards;
+}
+
+:root[data-boot="skip"] .boot {
+  animation: boot-skip var(--boot-skip) var(--ease-in-out) forwards;
+}
+
+/* Hidden under the fully drawn curtain. */
+.boot-panel {
+  animation: boot-gone 1ms linear calc(var(--boot-log) + 250ms) forwards;
+}
+
+.boot-curtain {
+  clip-path: inset(100% 0 0 0);
+  animation: boot-curtain 500ms var(--ease-in-out) var(--boot-log) both;
+}
+
+.boot-line {
+  animation: boot-line 1ms steps(1) both;
+  animation-delay: calc(60ms + var(--i, 0) * 150ms);
+}
+
+.boot-caret {
+  animation: boot-blink 300ms steps(1) calc(60ms + 3 * 150ms) 3 both;
+}
+
+.boot-bar {
+  animation: boot-bar var(--boot-log) steps(24, end) both;
+}
+
+.boot-timer::after {
+  content: "0." counter(boot-cs, decimal-leading-zero) "s";
+  counter-reset: boot-cs var(--boot-cs);
+  animation: boot-timer var(--boot-log) linear both;
+}
+
+@keyframes boot-gone {
+  to {
+    visibility: hidden;
+  }
+}
+
+@keyframes boot-skip {
+  from {
+    clip-path: inset(0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+    visibility: hidden;
+  }
+}
+
+@keyframes boot-curtain {
+  0% {
+    clip-path: inset(100% 0 0 0);
+  }
+  50% {
+    clip-path: inset(0);
+  }
+  100% {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes boot-line {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes boot-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes boot-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes boot-timer {
+  from {
+    --boot-cs: 0;
+  }
+  to {
+    --boot-cs: 70;
+  }
+}
+
+/* Hero: 0 name · 300 role · 500 chip, CTAs, graph · 2600 scroll cue.
+   Opacity fades are kept to small elements (see .hero-wipe). */
+.hero-line {
+  display: block;
+  overflow: clip;
+  padding-block: 0.08em;
+  margin-block: -0.08em;
+}
+
+.hero-letter {
+  display: inline-block;
+  animation: hero-rise var(--dur-slower) var(--ease-out) both;
+  animation-delay: calc(var(--hero-t0) + var(--i, 0) * 25ms);
+}
+
+/* Top-down wipe for the role line (the LCP element; see hero.tsx).
+   clip-path only: adding a transform makes Chrome miss it for LCP again. */
+.hero-wipe {
+  animation: hero-wipe var(--dur-slow) var(--ease-out) both;
+  animation-delay: calc(var(--hero-t0) + var(--d, 0ms));
+}
+
+.hero-in {
+  animation: hero-in var(--dur-slow) var(--ease-out) both;
+  animation-delay: calc(var(--hero-t0) + var(--d, 0ms));
+}
+
+:root[data-boot="skip"] .hero-letter {
+  animation-name: hero-rise-skip;
+}
+
+:root[data-boot="skip"] .hero-wipe {
+  animation-name: hero-wipe-skip;
+}
+
+:root[data-boot="skip"] .hero-in {
+  animation-name: hero-in-skip;
+}
+
+@keyframes hero-rise {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes hero-rise-skip {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+@keyframes hero-wipe {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes hero-wipe-skip {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+}
+
+@keyframes hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+@keyframes hero-in-skip {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+/* Reduced motion: every hero entrance is one 150ms fade, no delay. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-letter,
+  .hero-wipe,
+  .hero-in {
+    animation: reduced-fade 150ms linear both !important;
+  }
+}
+
+@keyframes reduced-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Status dot: the one infinite loop besides the marquee (2s). */
+.status-dot {
+  position: relative;
+}
+
+.status-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent);
+  opacity: 0;
+  animation: pulse-ring 2s var(--ease-out) infinite;
+}
+
+/* Graph: edges fill (stroke-dashoffset), pulse while data is in flight. */
+.edge-fill {
+  stroke-width: 1.25;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.edge-fill[data-filled] {
+  stroke-dashoffset: 0;
+  transition:
+    stroke-dashoffset 220ms linear,
+    stroke var(--dur-base) var(--ease-out);
+}
+
+.edge-pulse {
+  stroke-width: 2;
+  stroke-dasharray: 0.08 0.92;
+  animation: edge-pulse 700ms linear infinite;
+}
+
+.node-pulse {
+  animation: pulse-ring 900ms var(--ease-out) infinite;
+}
+
+@keyframes edge-pulse {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes pulse-ring {
+  from {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}

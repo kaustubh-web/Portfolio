@@ -28,3 +28,11 @@ One line per decision: `- YYYY-MM-DD · P<phase> · <decision> — <why>`
 - 2026-11-02 · P1 · Palette hint is decoupled: it dispatches a `kb:open-palette` window event that the Phase 6 palette will listen for.
 - 2026-11-02 · P1 · Compact (mobile) palette hint shows a `⌘` glyph on every platform; desktop shows `⌘K` on Apple, `Ctrl K` elsewhere.
 - 2026-11-02 · P1 · Grain is a generated 128px grayscale noise PNG (16 KB) tiled at token opacity.
+- 2026-11-02 · P2 · Boot gating via an inline `<head>` script that sets `html[data-boot]` before first paint (per Next's "preventing flash" guide); the preloader and hero timeline are pure CSS keyed on it — nothing waits for hydration, and no-JS visitors simply get no preloader.
+- 2026-11-02 · P2 · Preloader timeline: log 0–700ms, accent curtain 700–1200ms (up then away), hero t0 at 1000ms; sessionStorage flag set when the boot starts; any storage error skips the boot.
+- 2026-11-02 · P2 · Skip restarts the hero reveal by swapping to duplicate `*-skip` keyframe names (changing animation-delay mid-flight would jump); skipping is ignored once the reveal has begun.
+- 2026-11-02 · P2 · Role line uses a clip-path-only wipe instead of the fade-up — measured: Chrome never records opacity- or transform-revealed text for LCP until a later main-thread paint (hydration), while a clip-path wipe is recorded when it appears.
+- 2026-11-02 · P2 · Graph = Kahn's algorithm → simplified Sugiyama layout (waypoints for level-skipping edges, barycenter ordering) → dataflow schedule (node 180ms, edge 220ms; 2.18s run). Edges are drawn in measured pixels; nodes/labels are HTML so tooltips and focus work.
+- 2026-11-02 · P2 · Graph orientation switches on its own width (container query at 30rem), not the viewport: at 1024–1279 the right column is too narrow for six levels side by side, so it lays out top→bottom there too.
+- 2026-11-02 · P2 · Node state glyphs ○ → ✓ sit inside the node label and the log line; node markers are 10px squares (radius 0), with an accent pulse ring only while running.
+- 2026-11-02 · P2 · `/resume` is a temporary (307) redirect in next.config so replacing the PDF is never cached away; the hero Resume CTA links the PDF directly in a new tab.
