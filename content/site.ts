@@ -182,7 +182,7 @@ export const site: Site = {
     title: "Kaustubh Bramhe — Full-stack developer",
     description:
       "Full-stack developer building reliable backends, workflow engines, and LLM-powered products.",
-    url: "https://kaustubh.vercel.app",
+    url: "https://kaustubh-bramhe.vercel.app",
   },
 
   profile: {
