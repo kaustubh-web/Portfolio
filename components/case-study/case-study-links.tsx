@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 
-import { coverThen, getWorkOrigin, setWorkOrigin, supportsViewTransitions } from "@/lib/transition";
+import { coverThen, getWorkOrigin, setWorkOrigin } from "@/lib/transition";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { TransitionLink } from "@/components/shared/transition-link";
 
@@ -26,8 +26,8 @@ export function BackToWork({ slug, ...props }: LinkProps & { slug: string }) {
         if (getWorkOrigin() !== slug || window.history.length < 2) return;
         event.preventDefault();
         setWorkOrigin(null);
-        // Same curtain as a push when there are no view transitions.
-        if (reduced || supportsViewTransitions()) router.back();
+        // Same curtain as a push.
+        if (reduced) router.back();
         else coverThen(() => router.back());
       }}
       {...props}

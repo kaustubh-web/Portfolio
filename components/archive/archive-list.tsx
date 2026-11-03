@@ -149,6 +149,7 @@ export function ArchiveList({ entries, previews }: ArchiveListProps) {
                     <span className="inline-block transition-transform duration-(--dur-base) ease-out group-hover:translate-x-2">
                       {entry.name}
                     </span>
+                    <span className="sr-only"> (opens in a new tab)</span>
                   </a>
                 ) : (
                   <span className="inline-block transition-transform duration-(--dur-base) ease-out group-hover:translate-x-2">

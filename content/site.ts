@@ -150,7 +150,13 @@ export type Site = {
   certifications: Certification[];
   now: Now;
   footer: { builtWith: string; terminalHint: string; version: string; year: string };
-  terminal: { prompt: string; whoami: string };
+  terminal: {
+    prompt: string;
+    whoami: string;
+    greeting: string;
+    /** `help` output, in this order. Commands themselves live in components/layout/terminal.tsx. */
+    commands: { name: string; usage?: string; description: string }[];
+  };
 };
 
 /* ------------------------------------------------------------------ *
@@ -679,6 +685,17 @@ return row?.balance ?? 0; // derived`,
   terminal: {
     prompt: "kaustubh@dev: ~",
     whoami: "kaustubh bramhe — full-stack developer",
+    greeting: "kaustubh.dev shell · type help for commands · esc to close",
+    commands: [
+      { name: "help", description: "list commands" },
+      { name: "whoami", description: "who runs this machine" },
+      { name: "projects", description: "list selected work" },
+      { name: "resume", description: "open the resume (new tab)" },
+      { name: "contact", description: "email and socials" },
+      { name: "theme", usage: "theme [dark|light]", description: "toggle or set the theme" },
+      { name: "clear", description: "clear the screen" },
+      { name: "exit", description: "close the terminal" },
+    ],
   },
 };
 

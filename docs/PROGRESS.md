@@ -6,7 +6,7 @@
 - [x] Phase 3 — Selected Work
 - [x] Phase 4 — Case Studies
 - [x] Phase 5 — Remaining Sections
-- [ ] Phase 6 — Signature Interactions
+- [x] Phase 6 — Signature Interactions
 - [ ] Phase 7 — Polish & Ship
 
 ## Handoff notes
@@ -243,3 +243,79 @@ Each phase appends one block, newest last:
   - archive `year` ×5, `href` ×5 (rows unlinked), Smart Resume Screener `stack`
   - Now `building`, `learning`, `updated`
   - archive preview images `/public/archive/{event-booking,creator-intelligence,resume-screener,ambulance-routing,nodejs-course}.webp` (tokened poster until present; rebuild after adding)
+
+### Phase 6 — Signature Interactions (2026-11-03)
+- Built:
+  - ⌘K / Ctrl+K command palette (cmdk in a Radix dialog): 560px panel in the top third on desktop, a full-width sheet from the top on phones.
+    - Groups: Actions (open resume ↗, copy email, toggle theme, open terminal), Go to (4 case studies, 6 sections, top), Social.
+    - Placeholder socials are listed disabled with a visible `[[PLACEHOLDER]]`.
+    - Word-prefix search. While a query is typed, results are one flat ranked list.
+    - The navbar hint, ⌘K/Ctrl+K and the palette's own esc button all work. Touch opens it without summoning the keyboard.
+  - `~` terminal: bottom drawer (50svh), focus-trapped, Esc closes.
+    - Commands: help, whoami, projects (case-study links), resume (new tab), contact (email + copy, socials), `theme [dark|light]`, clear, exit.
+    - ↑/↓ history (keeps the draft), Ctrl+L clears, clicking empty space refocuses the prompt.
+    - Scrollback survives closing and route changes.
+    - Opened with `~` (or a backtick), the footer hint (now a button) or the palette.
+  - Custom cursor: an 8px `--fg` square that follows on `spring.cursor`.
+    - It becomes an accent pill with an ink label over `[data-cursor]` (`view ↗` / `copy` / `open`; any other value is shown as-is).
+    - Over other links and buttons it grows to a 2.5× translucent square.
+    - It re-checks its target while scrolling with a still mouse, shrinks on press, and hides on window leave or blur.
+    - It hides, and gives the native cursor back, while a modal overlay or the boot preloader is up.
+    - Mouse only: not rendered for coarse pointers or under reduced motion. The work card's in-card `view ↗` stays for keyboard focus only.
+  - Route curtain on every internal route change: next/prev, ← work (including history back), navbar/sheet links from case studies to `/#id`, and palette/terminal navigation.
+    - The card → case study morph stays a view transition, and only it.
+    - Reduced motion: instant.
+  - a11y audit:
+    - Every homepage and case-study tab stop has an accessible name and the 2px accent ring. Settled positions are on screen.
+    - New-tab links now announce "(opens in a new tab)": `NewTabMark`, or `NEW_TAB_LABEL` on `aria-label`s.
+    - The re-run button got a label.
+    - Palette/terminal "go to" moves focus to the target section (`tabindex=-1`, no ring).
+- Verified (headless Chrome via CDP; dev, then the production build via `next start`):
+  - Zero console errors or warnings.
+  - Palette: Ctrl+K opens with the input focused.
+    - "princ" ⏎ → `/#principles`, section at top 2px with focus on it, Lenis restarted.
+    - "forge" ⏎ → curtain cover → reveal → idle on `/work/forgefort`.
+    - From a case study, "contact" ⏎ → `/#contact`.
+    - Esc closes. ⌘K is ignored while the terminal, boot or curtain is up.
+    - Ranking: contact → [contact, copy email]; work → [work, 01–04]; zzz → empty state.
+  - Terminal: every command's output checked.
+    - ↑↑ → previous commands, ↓↓ → empty draft.
+    - 12 Tabs never leave the dialog.
+    - Ctrl+L clears. `exit` closes. `~` typed in the palette input types instead of opening the terminal.
+    - A projects link → curtain → case study.
+  - Cursor (1440): dot / link / `view ↗` / `copy` modes; label re-resolved after scroll.
+    - Palette open → hidden, native cursor back.
+    - Mouse leave → hidden. Card in-card label opacity 0.
+    - Light theme screenshot checked.
+  - Touch (390, coarse): no cursor; the palette sheet is 390px wide with no overflow; the terminal opens from the palette; terminal targets are ≥ 44px.
+  - Reduced motion: no cursor; palette navigation never raises the curtain.
+  - Regression: card click still runs exactly one view transition with no curtain. Next/prev and navbar → `/#principles` now curtain (no extra view transition).
+  - Listener leaks: `getEventListeners` on window, document and `<html>` are identical before and after six route changes plus palette/terminal use (dev).
+  - `npm run build` (PowerShell), `npm run lint`, `npx tsc --noEmit` clean; `/` and the case studies still prerender.
+- Key files:
+  - `components/layout/command-palette.tsx`, `terminal.tsx`, `cursor.tsx` (all mounted once in `app/layout.tsx`).
+  - `lib/events.ts`: now the overlay store (`useOverlay`, `openPalette`, `openTerminal`, `closeOverlay`, `getOverlay`) plus `isEditable`. The Phase 1 `kb:open-palette` window event is gone.
+  - `hooks/use-site-navigate.ts`: `useSiteNavigate()` (same-route `/#id` → scroll + focus; other routes → curtain + push) and `focusTarget(id)`.
+  - `hooks/use-lenis-pause.ts`: stop Lenis while an overlay is open.
+  - `components/shared/new-tab-mark.tsx`: `NewTabMark`, `NEW_TAB_LABEL`.
+  - `components/contact/terminal-hint.tsx`: footer hint button.
+  - `components/shared/transition-link.tsx`: curtain for everything except the morph.
+  - `content/site.ts`: `terminal.greeting`, `terminal.commands` (help text).
+  - `app/globals.css`: new "Signature interactions" block (cursor modes, `html[data-cursor-on]`, `[data-hover-label]`, section focus target).
+- Conventions introduced:
+  - Open overlays through the store (`openPalette()` / `openTerminal()`), never with local state. Only one can be open.
+  - Global shortcuts check `isEditable(target)`, `getOverlay()`, `getBoot().phase` and `getCurtain()` before acting.
+  - Overlay actions run after the dialog closes, in `onCloseAutoFocus` (`after` ref): the action decides focus, and focus can leave the trap.
+  - Navigation from code goes through `useSiteNavigate()`. Links use `TransitionLink`. Plain `next/link` is never used for internal routes.
+  - Cursor labels: put `data-cursor="view|copy|open|<text>"` on the interactive element. A hover label that duplicates the cursor gets `data-hover-label` (hidden while the custom cursor is on, shown on `:focus-visible`).
+  - New-tab links: `<NewTabMark />` for the visible ↗, or append `NEW_TAB_LABEL` to an `aria-label`.
+- Known issues:
+  - The custom cursor hides the native cursor site-wide (outside overlays), including the text I-beam over prose.
+  - Cursor state is read from the DOM under the pointer. An element that changes `data-cursor` while hovered updates on the next move or scroll.
+  - Cross-route "go to" (case study → `/#id`) lands on the section but doesn't move focus to it (Next handles the hash scroll after the curtain). Same-route jumps do move focus.
+  - Browser back/forward still swap without the curtain (no hook before popstate; unchanged from Phase 4).
+  - The resume command/action opens `/Kaustubh_Bramhe_Resume.pdf`, still missing from `public/` (404).
+  - cmdk 1.1.1 can't reorder groups (it looks them up by internal id), hence the flat result list while searching. Revisit if cmdk fixes it.
+  - Dev only: a cross-route push takes ~1s on first compile, so the curtain holds longer in dev than in production (~0.5s).
+  - Real Safari/Firefox and real touch devices still not tested (headless Chrome only).
+- Placeholders added: none new. Now also visible in the palette (Social, disabled) and the terminal `contact`: socials ×3. Resume PDF still pending.

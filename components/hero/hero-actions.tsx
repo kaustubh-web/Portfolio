@@ -4,6 +4,7 @@ import { site } from "@/content/site";
 import { cn } from "@/lib/utils";
 import { copyEmail } from "@/lib/clipboard";
 import { Magnetic } from "@/components/motion";
+import { NewTabMark } from "@/components/shared/new-tab-mark";
 
 const base =
   "label-meta inline-flex h-11 items-center gap-2 rounded-xs px-4 transition-colors duration-(--dur-instant)";
@@ -24,7 +25,7 @@ export function HeroActions({ className }: { className?: string }) {
           rel="noopener"
           className={cn(base, "bg-accent text-on-accent hover:bg-fg hover:text-bg")}
         >
-          Resume <span aria-hidden>↗</span>
+          Resume <NewTabMark />
         </a>
       </Magnetic>
 
@@ -42,6 +43,7 @@ export function HeroActions({ className }: { className?: string }) {
                 )}
               >
                 {social.label}
+                <span className="sr-only"> (opens in a new tab)</span>
               </a>
             </Magnetic>
           </li>

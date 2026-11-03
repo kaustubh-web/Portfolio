@@ -1,6 +1,8 @@
 import { getSection, sectionLabel, site } from "@/content/site";
 import { Magnetic } from "@/components/motion";
 import { ContactEmail } from "@/components/contact/contact-email";
+import { TerminalHint } from "@/components/contact/terminal-hint";
+import { NewTabMark } from "@/components/shared/new-tab-mark";
 
 const section = getSection("contact");
 
@@ -40,7 +42,7 @@ export function Contact() {
               <li key={item.label}>
                 <Magnetic>
                   <a href={item.href} target="_blank" rel="noopener" data-cursor="open" className={link}>
-                    {item.label} <span aria-hidden>↗</span>
+                    {item.label} <NewTabMark />
                   </a>
                 </Magnetic>
               </li>
@@ -61,7 +63,7 @@ export function Contact() {
           <p>
             © {footer.year} {profile.name}
           </p>
-          <p className="pointer-coarse:hidden md:text-right">{footer.terminalHint}</p>
+          <TerminalHint label={footer.terminalHint} className="pointer-coarse:hidden md:justify-self-end" />
         </div>
       </div>
     </section>

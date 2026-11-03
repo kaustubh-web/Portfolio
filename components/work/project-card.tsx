@@ -13,6 +13,7 @@ import { Magnetic } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
 import { PreviewVideo } from "@/components/work/preview-video";
 import { TransitionLink } from "@/components/shared/transition-link";
+import { NEW_TAB_LABEL } from "@/components/shared/new-tab-mark";
 
 /** Stack badges shown on phones before collapsing into "+N". */
 const MOBILE_BADGES = 4;
@@ -44,7 +45,7 @@ function ProjectLinks({ project, framed }: { project: Project; framed: boolean }
               href={link.href}
               target="_blank"
               rel="noopener"
-              aria-label={`${link.label} — ${project.name}`}
+              aria-label={`${link.label} — ${project.name}${NEW_TAB_LABEL}`}
               className={cn(
                 "label-meta inline-flex h-11 items-center gap-1.5 rounded-xs transition-colors duration-(--dur-instant)",
                 framed
@@ -168,6 +169,7 @@ export const ProjectCard = memo(function ProjectCard({
       >
         <span
           aria-hidden
+          data-hover-label
           className="label-meta pointer-events-none absolute top-1/2 left-2/3 inline-flex h-8 -translate-1/2 scale-90 items-center rounded-xs bg-accent px-3 text-on-accent opacity-0 transition-[opacity,scale] duration-(--dur-fast) ease-out group-hover/link:scale-100 group-hover/link:opacity-100 group-focus-visible/link:scale-100 group-focus-visible/link:opacity-100 max-lg:hidden"
         >
           view ↗

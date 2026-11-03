@@ -8,6 +8,9 @@ import { Navbar } from "@/components/layout/navbar";
 import { GrainOverlay, GridOverlay } from "@/components/layout/overlays";
 import { Preloader } from "@/components/layout/preloader";
 import { RouteCurtain } from "@/components/layout/route-curtain";
+import { CommandPalette } from "@/components/layout/command-palette";
+import { Terminal } from "@/components/layout/terminal";
+import { Cursor } from "@/components/layout/cursor";
 import { bootScript } from "@/lib/boot-config";
 
 const display = Instrument_Serif({
@@ -59,6 +62,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Navbar />
           {children}
           <GridOverlay />
+          <CommandPalette />
+          <Terminal />
+          <Cursor />
           <RouteCurtain />
           <GrainOverlay />
         </Providers>

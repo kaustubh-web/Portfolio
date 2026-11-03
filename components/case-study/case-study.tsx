@@ -9,6 +9,7 @@ import { PreviewVideo } from "@/components/work/preview-video";
 import { ArchitectureDiagram } from "@/components/case-study/architecture-diagram";
 import { CodeSnippet } from "@/components/case-study/code-snippet";
 import { AdjacentLink, BackToWork } from "@/components/case-study/case-study-links";
+import { NEW_TAB_LABEL } from "@/components/shared/new-tab-mark";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -61,7 +62,7 @@ function ProjectLinks({ project }: { project: Project }) {
               href={link.href}
               target="_blank"
               rel="noopener"
-              aria-label={`${link.label} — ${project.name}`}
+              aria-label={`${link.label} — ${project.name}${NEW_TAB_LABEL}`}
               className="label-meta inline-flex h-11 items-center gap-1.5 rounded-xs border border-line-strong px-4 transition-colors duration-(--dur-instant) hover:border-fg"
             >
               {link.label} <span aria-hidden>↗</span>

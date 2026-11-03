@@ -451,6 +451,7 @@ export function PipelineGraph({ nodes, edges, className }: PipelineGraphProps) {
         <button
           type="button"
           onClick={rerun}
+          aria-label="Re-run the pipeline"
           className="inline-flex h-11 items-center gap-2 px-4 transition-colors duration-(--dur-instant) hover:text-fg"
         >
           <span aria-hidden>↻</span> re-run

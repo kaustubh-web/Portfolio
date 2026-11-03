@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type ComponentProps } from "react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { site } from "@/content/site";
@@ -10,6 +9,8 @@ import { openPalette } from "@/lib/events";
 import { scrollToId } from "@/lib/scroll";
 import { useLenis } from "@/hooks/use-lenis";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { TransitionLink } from "@/components/shared/transition-link";
+import { NewTabMark } from "@/components/shared/new-tab-mark";
 import {
   Sheet,
   SheetClose,
@@ -33,7 +34,7 @@ function SectionLink({
   onHome,
   ...props
 }: Omit<ComponentProps<"a">, "href"> & { id: string; onHome: boolean }) {
-  return onHome ? <a href={`#${id}`} {...props} /> : <Link href={`/#${id}`} {...props} />;
+  return onHome ? <a href={`#${id}`} {...props} /> : <TransitionLink href={`/#${id}`} {...props} />;
 }
 
 /** Hidden while scrolling down past the fold, shown on any scroll up. */
@@ -198,7 +199,7 @@ function MobileMenu() {
                 rel="noopener"
                 className="inline-flex h-11 items-center font-mono text-meta text-fg-muted hover:text-fg"
               >
-                {social.label} ↗
+                {social.label}&nbsp;<NewTabMark />
               </a>
             </li>
           ))}

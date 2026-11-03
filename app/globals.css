@@ -858,3 +858,60 @@
   width: 2ch;
   margin-right: 1.5ch;
 }
+
+/* ------------------------------------------------------------------ *
+ * Signature interactions (components/layout/: cursor, command-palette,
+ * terminal). The cursor's modes are data attributes; scale and opacity
+ * only. html[data-cursor-on] is set while the custom cursor is visible.
+ * ------------------------------------------------------------------ */
+html[data-cursor-on],
+html[data-cursor-on] * {
+  cursor: none;
+}
+
+.cursor .cursor-dot,
+.cursor .cursor-label {
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    scale var(--dur-fast) var(--ease-out);
+}
+
+.cursor .cursor-label {
+  opacity: 0;
+  scale: 0.4;
+}
+
+.cursor[data-mode="hidden"] .cursor-dot {
+  opacity: 0;
+}
+
+.cursor[data-mode="link"] .cursor-dot {
+  scale: 2.5;
+  opacity: 0.4;
+}
+
+.cursor[data-mode="label"] .cursor-dot {
+  opacity: 0;
+  scale: 0;
+}
+
+.cursor[data-mode="label"] .cursor-label {
+  opacity: 1;
+  scale: 1;
+}
+
+/* With the custom cursor up, its pill replaces in-element hover labels
+   (the work card's "view ↗"); keyboard focus still shows them. */
+html[data-cursor-on] [data-hover-label] {
+  opacity: 0;
+}
+
+html[data-cursor-on] :focus-visible > [data-hover-label] {
+  opacity: 1;
+}
+
+/* Programmatic focus targets (palette / terminal "go to" a section):
+   focus moves for screen readers and Tab order, no ring on the section. */
+section[tabindex="-1"]:focus {
+  outline: none;
+}
