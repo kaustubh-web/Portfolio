@@ -403,3 +403,18 @@ Each phase appends one block, newest last:
   - Lighthouse was verified on desktop Chrome with simulated mobile throttling, not on a real phone.
 
 **Project status: complete.** All phases 0–7 are done. What remains is content: the placeholders above.
+
+### Phase 7 follow-up — Amber CRT + hero rework (2026-11-03)
+- Built:
+  - Palette switched to Amber CRT (tokens in `app/globals.css`, `lib/og.tsx` mirror, `app/icon.svg`).
+  - Hero restructured: `$ whoami` → name (mono, h3 size) → role line as the serif headline → status → CTAs.
+  - Status copy now covers SDE and full-stack roles.
+  - Home OG card matches the new hero.
+  - Removed `--text-hero` and `profile.nameLines`. See DECISIONS (P7+).
+- Verified:
+  - Build, lint and tsc are clean.
+  - The 30-run responsive/reduced-motion pass is still clean: overflow 0, zero console errors, zero running animations under reduced motion.
+  - Screenshots checked at 1440 (dark and light), 1024 and 390, plus a case study and the OG card.
+  - Lighthouse was not re-run: the laptop is still on battery (see Phase 7 known issues). The LCP element is still static text, now larger, so expect the same LCP. Re-run on AC.
+- Known issues:
+  - PLAN.md's Design System tables and the SPEC hero line still describe the old palette and the giant name. DECISIONS (P7+) supersedes them.

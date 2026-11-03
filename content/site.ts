@@ -15,8 +15,6 @@ export type ExternalLink = {
 
 export type Profile = {
   name: string;
-  /** Hero renders these as two lines. */
-  nameLines: [string, string];
   initials: string;
   domain: string;
   role: string;
@@ -187,7 +185,6 @@ export const site: Site = {
 
   profile: {
     name: "Kaustubh Bramhe",
-    nameLines: ["Kaustubh", "Bramhe"],
     initials: "kb",
     domain: "kaustubh-bramhe",
     role: "Full-stack developer",
@@ -198,8 +195,8 @@ export const site: Site = {
     timezone: { iana: "Asia/Kolkata", label: "IST" },
     status: {
       available: true,
-      label: "available for SDE roles · 2027",
-      short: "available · SDE 2027",
+      label: "open to SDE & full-stack roles · 2027",
+      short: "open · SDE & full-stack · 2027",
     },
     resume: { href: "/Kaustubh_Bramhe_Resume.pdf", route: "/resume" },
   },
@@ -671,7 +668,7 @@ return row?.balance ?? 0; // derived`,
     rows: [
       { key: "building", value: "[[PLACEHOLDER]]" },
       { key: "learning", value: "[[PLACEHOLDER]]" },
-      { key: "status", value: "open to SDE roles for 2027", live: true },
+      { key: "status", value: "open to SDE and full-stack roles for 2027", live: true },
     ],
   },
 

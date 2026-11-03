@@ -12,18 +12,18 @@
 :root {
   color-scheme: dark;
 
-  --bg: #0b0b0c;
-  --surface: #121214;
-  --surface-2: #19191b;
-  --fg: #edeae3;
-  --fg-muted: #8a867e;
-  --fg-subtle: #55524d;
-  --line: rgb(237 234 227 / 0.08);
-  --line-strong: rgb(237 234 227 / 0.16);
-  --grid-line: rgb(237 234 227 / 0.04);
-  --accent: #ff5b1f;
-  --accent-ink: #ff5b1f;
-  --on-accent: #0b0b0c;
+  --bg: #120e08;
+  --surface: #1a150d;
+  --surface-2: #221b11;
+  --fg: #f2d8a6;
+  --fg-muted: #a3875a;
+  --fg-subtle: #5e4c30;
+  --line: rgb(242 216 166 / 0.08);
+  --line-strong: rgb(242 216 166 / 0.16);
+  --grid-line: rgb(242 216 166 / 0.04);
+  --accent: #ffb000;
+  --accent-ink: #ffb000;
+  --on-accent: #120e08;
   --grain-opacity: 0.025;
 
   /* spacing (4px base) — design steps, for hand-written CSS */
@@ -88,16 +88,18 @@
 :root.light {
   color-scheme: light;
 
-  --bg: #f2efe8;
-  --surface: #eae6dd;
-  --surface-2: #e1dcd1;
-  --fg: #141413;
-  --fg-muted: #6b675f;
-  --fg-subtle: #a39e94;
-  --line: rgb(20 20 19 / 0.1);
-  --line-strong: rgb(20 20 19 / 0.2);
-  --grid-line: rgb(20 20 19 / 0.05);
-  --accent-ink: #b83a0b;
+  --bg: #e9e7e1;
+  --surface: #dedbd3;
+  --surface-2: #d3cfc4;
+  --fg: #1d160b;
+  --fg-muted: #66573c;
+  --fg-subtle: #a69a84;
+  --line: rgb(29 22 11 / 0.1);
+  --line-strong: rgb(29 22 11 / 0.2);
+  --grid-line: rgb(29 22 11 / 0.05);
+  /* Full-strength amber is 1.5:1 on paper: fills go deeper (3.4:1), text deeper still (4.9:1). */
+  --accent: #a86f00;
+  --accent-ink: #8a5700;
   --grain-opacity: 0.03;
 }
 
@@ -171,9 +173,6 @@
 @theme {
   --breakpoint-xl: 90rem;
 
-  --text-hero: clamp(3.5rem, 18vw, 5rem);
-  --text-hero--line-height: 0.86;
-  --text-hero--letter-spacing: -0.02em;
   --text-display-xl: clamp(2.75rem, 7vw, 7.5rem);
   --text-display-xl--line-height: 0.95;
   --text-display-xl--letter-spacing: -0.015em;
@@ -200,12 +199,6 @@
 }
 
 @layer base {
-  @media (width >= 64rem) {
-    :root {
-      --text-hero: clamp(5rem, 12vw, 14rem);
-    }
-  }
-
   * {
     @apply border-line;
   }

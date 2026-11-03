@@ -12,27 +12,33 @@ const section = getSection("index");
 const at = (ms: number) => ({ "--d": `${ms}ms` }) as CSSProperties;
 
 /**
+ * The name as the output of `whoami`: a modest mono line, not the headline.
  * Split-letter masked reveal, pure CSS so it starts on the first frame
- * instead of waiting for hydration (LCP). Letters are aria-hidden; the
- * accessible name is the plain text.
+ * instead of waiting for hydration. Letters are aria-hidden; the accessible
+ * name is the plain text.
  */
 function HeroName() {
-  let i = 0;
+  const name = site.profile.name.toLowerCase();
   return (
-    <h1 className="font-display text-hero uppercase">
-      <span className="sr-only">{site.profile.name}</span>
-      <span aria-hidden className="block">
-        {site.profile.nameLines.map((line) => (
-          <span key={line} className="hero-line">
-            {Array.from(line).map((letter, j) => (
-              <span key={j} className="hero-letter" style={{ "--i": i++ } as CSSProperties}>
-                {letter}
-              </span>
-            ))}
+    <div className="flex flex-col gap-2 font-mono">
+      <p aria-hidden className="hero-in text-meta text-fg-muted" style={at(0)}>
+        <span className="text-accent-ink">$</span> whoami
+      </p>
+      <h1 className="text-h3 font-normal tracking-tight">
+        <span className="sr-only">{site.profile.name}</span>
+        <span aria-hidden className="hero-line">
+          {Array.from(name).map((letter, i) => (
+            <span key={i} className="hero-letter" style={{ "--i": i } as CSSProperties}>
+              {letter === " " ? " " : letter}
+            </span>
+          ))}
+          {/* Static caret: the only infinite loops allowed are the marquee and status dot. */}
+          <span className="hero-letter text-accent-ink" style={{ "--i": name.length } as CSSProperties}>
+            ▍
           </span>
-        ))}
-      </span>
-    </h1>
+        </span>
+      </h1>
+    </div>
   );
 }
 
@@ -79,16 +85,19 @@ export function Hero() {
           </p>
         </div>
 
-        {/* Name, role, status, CTAs */}
-        <div className="col-span-full flex flex-col gap-8 md:col-span-6 lg:col-span-7 lg:justify-between lg:gap-12">
-          <HeroName />
-          <div className="flex flex-col items-start gap-6">
-            {/* No entrance: this is the LCP element. Any reveal (even the earlier
-                clip-path wipe) waits on a main thread busy with hydration, which put
-                mobile LCP at 4s in Lighthouse. Static, it paints with FCP. */}
-            <p className="max-w-[34ch] text-lead text-fg-muted">
+        {/* whoami → name, role headline, status, CTAs */}
+        <div className="col-span-full flex flex-col gap-8 md:col-span-6 lg:col-span-7 lg:gap-12">
+          <div className="flex flex-col gap-6 lg:gap-8">
+            <HeroName />
+            {/* The headline. No entrance: this is the LCP element. Any reveal (even
+                the earlier clip-path wipe) waits on a main thread busy with
+                hydration, which put mobile LCP at 4s in Lighthouse. Static, it
+                paints with FCP. */}
+            <p className="max-w-[24ch] font-display text-display-l text-balance text-fg">
               {profile.roleLine}
             </p>
+          </div>
+          <div className="flex flex-col items-start gap-6">
             <div className="hero-in" style={at(500)}>
               <StatusChip />
             </div>

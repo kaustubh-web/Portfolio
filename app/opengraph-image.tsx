@@ -8,10 +8,9 @@ export const contentType = ogContentType;
 export default function Image() {
   return renderOgImage({
     label: sectionLabel(getSection("index")),
-    title: site.profile.nameLines,
-    titleSize: 168,
-    uppercase: true,
-    lead: site.profile.roleLine,
+    whoami: site.profile.name.toLowerCase(),
+    title: [site.profile.roleLine],
+    titleSize: 68,
     status: site.profile.status.label,
   });
 }
