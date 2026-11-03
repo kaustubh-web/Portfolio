@@ -22,6 +22,8 @@ type PreviewVideoProps = {
    * the page opens scrolled to it (e.g. /#work), but must not compete with the hero.
    */
   eager?: boolean;
+  /** The page's hero (case study): fetch the poster eagerly at high priority. */
+  priority?: boolean;
   /** next/image `sizes` for the poster. */
   sizes: string;
   className?: string;
@@ -58,6 +60,7 @@ export function PreviewVideo({
   slug,
   hold = false,
   eager = false,
+  priority = false,
   sizes,
   className,
   controlClassName,
@@ -82,8 +85,8 @@ export function PreviewVideo({
           alt=""
           fill
           sizes={sizes}
-          loading={eager ? "eager" : "lazy"}
-          fetchPriority={eager ? "low" : undefined}
+          loading={eager || priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : eager ? "low" : undefined}
           className="object-cover"
         />
       ) : (

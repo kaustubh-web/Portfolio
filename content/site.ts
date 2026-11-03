@@ -66,7 +66,13 @@ export type Snippet = {
 };
 
 export type DiagramNode = { id: string; label: string; detail?: string };
-export type DiagramEdge = { from: string; to: string; label?: string };
+export type DiagramEdge = {
+  from: string;
+  to: string;
+  label?: string;
+  /** A return path (e.g. a stream back to the client): drawn last, routed around the flow. */
+  back?: boolean;
+};
 
 export type CaseStudy = {
   role: string;
@@ -296,22 +302,57 @@ export const site: Site = {
             { from: "client", to: "api" },
             { from: "api", to: "engine" },
             { from: "engine", to: "executors" },
-            { from: "engine", to: "client", label: "SSE" },
+            { from: "engine", to: "client", label: "SSE", back: true },
           ],
         },
         snippets: [
           {
             file: "engine/kahn.ts",
             lang: "ts",
-            code: "[[REPLACE WITH REAL CODE]]",
-            highlight: [],
+            code: `// [[REPLACE WITH REAL CODE]] illustrative only
+export function topoSort(nodes: FlowNode[], edges: FlowEdge[]): string[] {
+  const indegree = new Map(nodes.map((n) => [n.id, 0]));
+  const out = new Map(nodes.map((n) => [n.id, [] as string[]]));
+  for (const { source, target } of edges) {
+    out.get(source)!.push(target);
+    indegree.set(target, indegree.get(target)! + 1);
+  }
+
+  const queue = nodes.filter((n) => indegree.get(n.id) === 0).map((n) => n.id);
+  const order: string[] = [];
+  while (queue.length) {
+    const id = queue.shift()!;
+    order.push(id);
+    for (const next of out.get(id)!) {
+      indegree.set(next, indegree.get(next)! - 1);
+      if (indegree.get(next) === 0) queue.push(next);
+    }
+  }
+
+  if (order.length !== nodes.length) throw new CycleError(nodes, order);
+  return order;
+}`,
+            highlight: [12, 16, 17, 21],
             caption: "Kahn's topological sort",
           },
           {
             file: "engine/stream.ts",
             lang: "ts",
-            code: "[[REPLACE WITH REAL CODE]]",
-            highlight: [],
+            code: `// [[REPLACE WITH REAL CODE]] illustrative only
+router.get("/runs/:id/stream", requireAuth, (req, res) => {
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+
+  const send = (event: NodeEvent) =>
+    res.write(\`event: \${event.type}\\ndata: \${JSON.stringify(event)}\\n\\n\`);
+
+  const unsubscribe = runs.subscribe(req.params.id, send);
+  req.on("close", unsubscribe);
+});`,
+            highlight: [4, 10, 13],
             caption: "SSE push of per-node status",
           },
         ],
@@ -362,8 +403,22 @@ export const site: Site = {
           {
             file: "api/recommend.ts",
             lang: "ts",
-            code: "[[REPLACE WITH REAL CODE]]",
-            highlight: [],
+            code: `// [[REPLACE WITH REAL CODE]] illustrative only
+export async function recommend(productId: string) {
+  const sales = await salesHistory(productId); // synced from WooCommerce
+
+  const res = await fetch(\`\${ML_URL}/elasticity\`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, sales }),
+    signal: AbortSignal.timeout(5_000),
+  });
+  if (!res.ok) throw new UpstreamError("ml", res.status);
+
+  const { optimalPrice, elasticity } = (await res.json()) as MlResult;
+  return { optimalPrice, elasticity, projected: projectRevenue(sales, optimalPrice) };
+}`,
+            highlight: [5, 9, 11],
             caption: "Node → FastAPI call",
           },
         ],
@@ -404,8 +459,23 @@ export const site: Site = {
           {
             file: "middleware/validate.ts",
             lang: "ts",
-            code: "[[REPLACE WITH REAL CODE]]",
-            highlight: [],
+            code: `// [[REPLACE WITH REAL CODE]] illustrative only
+export const validate =
+  (schema: z.ZodType) => (req: Request, _res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body);
+    if (!result.success) return next(new ValidationError(result.error.issues));
+    req.body = result.data; // layer 1: Zod at the edge
+    next();
+  };
+
+router.post("/tickets", validate(CreateTicket), async (req, res) => {
+  const ticket = await Ticket.create(req.body); // layer 2: Mongoose schema
+  res.status(201).json(ticket);
+});
+
+// layer 3: one error handler shapes every failure
+app.use(errorHandler);`,
+            highlight: [4, 11, 16],
             caption: "Layered validation",
           },
         ],
@@ -445,8 +515,32 @@ export const site: Site = {
           {
             file: "services/transfer.ts",
             lang: "ts",
-            code: "[[REPLACE WITH REAL CODE]]",
-            highlight: [],
+            code: `// [[REPLACE WITH REAL CODE]] illustrative only
+export async function transfer({ key, from, to, amount }: TransferInput) {
+  const session = await mongoose.startSession();
+  try {
+    return await session.withTransaction(async () => {
+      const prior = await Transfer.findOne({ key }).session(session);
+      if (prior) return prior; // same key: replay the result, never re-post
+
+      const balance = await balanceOf(from, session); // derived from entries
+      if (balance < amount) throw new InsufficientFunds(from);
+
+      const [t] = await Transfer.create([{ key, from, to, amount }], { session });
+      await Entry.create(
+        [
+          { account: from, amount: -amount, transfer: t._id },
+          { account: to, amount, transfer: t._id },
+        ],
+        { session },
+      );
+      return t;
+    });
+  } finally {
+    await session.endSession();
+  }
+}`,
+            highlight: [5, 6, 7, 13],
             caption: "Idempotency check inside a transaction",
           },
         ],
@@ -598,3 +692,11 @@ export const sectionLabel = (section: Section): string =>
 
 export const getProject = (slug: string): Project | undefined =>
   site.projects.find((p) => p.slug === slug);
+
+/** The projects either side of `slug`, wrapping around: 01's prev is the last. */
+export const getAdjacent = (slug: string): { prev: Project; next: Project } => {
+  const { projects } = site;
+  const i = projects.findIndex((p) => p.slug === slug);
+  const at = (offset: number) => projects[(i + offset + projects.length) % projects.length]!;
+  return { prev: at(-1), next: at(1) };
+};

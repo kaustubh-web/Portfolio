@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers/providers";
 import { Navbar } from "@/components/layout/navbar";
 import { GrainOverlay, GridOverlay } from "@/components/layout/overlays";
 import { Preloader } from "@/components/layout/preloader";
+import { RouteCurtain } from "@/components/layout/route-curtain";
 import { bootScript } from "@/lib/boot-config";
 
 const display = Instrument_Serif({
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Navbar />
           {children}
           <GridOverlay />
+          <RouteCurtain />
           <GrainOverlay />
         </Providers>
       </body>

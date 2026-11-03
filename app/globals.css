@@ -621,3 +621,226 @@
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: calc(100% / 16) calc(100% / 9);
 }
+
+/* ------------------------------------------------------------------ *
+ * Case studies (components/case-study/).
+ * Architecture diagram: a top → bottom spine, edges in a left gutter one
+ * lane per overlapping span; layered left → right once the diagram itself
+ * is ≥ 40rem wide (route() in architecture-diagram.tsx reads the switch
+ * from `.arch-node`'s position). Edges start drawn; GSAP undraws and
+ * scrubs them, so reduced motion and no-JS get the finished diagram.
+ * ------------------------------------------------------------------ */
+.arch {
+  container: arch / inline-size;
+  --arch-lane: 0.875rem;
+  --arch-node-h: 5.75rem;
+  --arch-level-gap: 3rem;
+}
+
+.arch-canvas {
+  position: relative;
+}
+
+.arch-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-left: calc(var(--arch-lanes, 1) * var(--arch-lane) + var(--space-3));
+}
+
+.arch-node {
+  position: relative;
+  display: flex;
+  gap: var(--space-3);
+  min-height: 3.5rem;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg);
+}
+
+@container arch (width >= 40rem) {
+  .arch-nodes {
+    display: block;
+    position: relative;
+    padding-left: 0;
+    height: calc(
+      var(--arch-slots, 1) * var(--arch-node-h) + (var(--arch-slots, 1) - 1) * var(--space-5)
+    );
+  }
+
+  .arch[data-back] .arch-nodes {
+    margin-bottom: var(--space-7);
+  }
+
+  .arch-node {
+    --arch-node-w: min(
+      12rem,
+      (100% - (var(--arch-levels, 1) - 1) * var(--arch-level-gap)) / var(--arch-levels, 1)
+    );
+    position: absolute;
+    width: var(--arch-node-w);
+    height: var(--arch-node-h);
+    left: calc(var(--lv, 0) * (100% - var(--arch-node-w)));
+    top: calc(var(--cr, 0.5) * (100% - var(--arch-node-h)));
+  }
+}
+
+.arch-edge {
+  fill: none;
+  stroke: var(--fg-muted);
+  stroke-width: 1.25;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+
+.arch-edge-tip {
+  fill: none;
+  stroke: var(--fg-muted);
+  stroke-width: 1.25;
+}
+
+.arch-edge-back .arch-edge,
+.arch-edge-back .arch-edge-tip {
+  stroke: var(--accent);
+}
+
+/* Shiki (lib/highlight.ts) emits --shiki-* variables. Strings are the only
+   accent tokens (`constant` also covers variables, so it stays ink). */
+.code-snippet {
+  --shiki-foreground: var(--fg);
+  --shiki-background: transparent;
+  --shiki-token-keyword: var(--fg-muted);
+  --shiki-token-comment: var(--fg-muted);
+  --shiki-token-string: var(--accent-ink);
+  --shiki-token-string-expression: var(--accent-ink);
+  --shiki-token-constant: var(--fg);
+  --shiki-token-function: var(--fg);
+  --shiki-token-parameter: var(--fg);
+  --shiki-token-punctuation: var(--fg-muted);
+  --shiki-token-link: var(--fg);
+}
+
+.code-snippet pre {
+  overflow-x: auto;
+  padding-block: var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  color: var(--fg);
+  tab-size: 2;
+  counter-reset: line;
+}
+
+.code-snippet pre:focus-visible {
+  outline-offset: -2px;
+}
+
+.code-snippet code {
+  display: block;
+  min-width: max-content;
+}
+
+.code-snippet .line {
+  display: inline-block;
+  width: 100%;
+  padding-right: var(--space-5);
+  border-left: 2px solid transparent;
+  counter-increment: line;
+}
+
+.code-snippet .line::before {
+  content: counter(line);
+  display: inline-block;
+  width: 3.5ch;
+  margin-right: 2ch;
+  text-align: right;
+  color: var(--fg-subtle);
+  user-select: none;
+}
+
+.code-snippet .line[data-hl] {
+  border-left-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.code-snippet .line[data-hl]::before {
+  color: var(--accent-ink);
+}
+
+/* ------------------------------------------------------------------ *
+ * Route transitions (lib/transition.ts). View Transitions API: the card
+ * preview morphs into the case-study hero (`work-media`), the rest of the
+ * page crossfades. Without the API: the accent curtain (RouteCurtain).
+ * ------------------------------------------------------------------ */
+::view-transition {
+  pointer-events: none;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--dur-base);
+}
+
+::view-transition-group(.work-media) {
+  animation-duration: var(--dur-slow);
+  animation-timing-function: var(--ease-in-out);
+}
+
+/* Fixed chrome stays put while the page underneath changes. */
+::view-transition-group(site-nav) {
+  animation: none;
+  z-index: 1;
+}
+
+::view-transition-old(site-nav) {
+  display: none;
+}
+
+::view-transition-new(site-nav) {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
+
+.route-curtain {
+  pointer-events: none;
+  clip-path: inset(100% 0 0 0);
+  visibility: hidden;
+}
+
+.route-curtain[data-state="cover"] {
+  visibility: visible;
+  pointer-events: auto;
+  animation: curtain-cover 420ms var(--ease-in-out) forwards;
+}
+
+.route-curtain[data-state="reveal"] {
+  visibility: visible;
+  animation: curtain-reveal 480ms var(--ease-in-out) forwards;
+}
+
+@keyframes curtain-cover {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes curtain-reveal {
+  from {
+    clip-path: inset(0);
+  }
+  to {
+    clip-path: inset(0 0 100% 0);
+  }
+}

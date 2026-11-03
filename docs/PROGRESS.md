@@ -4,7 +4,7 @@
 - [x] Phase 1 — Foundation
 - [x] Phase 2 — Preloader + Hero + Marquee
 - [x] Phase 3 — Selected Work
-- [ ] Phase 4 — Case Studies
+- [x] Phase 4 — Case Studies
 - [ ] Phase 5 — Remaining Sections
 - [ ] Phase 6 — Signature Interactions
 - [ ] Phase 7 — Polish & Ship
@@ -141,3 +141,51 @@ Each phase appends one block, newest last:
   - `public/work/ticket-tracker.{mp4,webm,webp}`
   - `public/work/backend-ledger.{mp4,webm,webp}`
   - Still pending and now visible on the cards: `repoUrl` ×4 (GitHub ↗ links resolve relative → 404).
+
+### Phase 4 — Case Studies (2026-11-03)
+- Built:
+  - `/work/[slug]` prerendered for all four projects (`generateStaticParams` + `ensureStatic = "navigation"`, so the build fails if a slug would render per request); unknown slugs 404 with noindex; per-slug title/description metadata.
+  - Layout per the wireframe: top bar (`← work / 01 forgefort` … `next: price-optimizer →`), 16:9 hero preview, title + subtitle + pitch, meta list (role, stack, status, magnetic Live ↗ / GitHub ↗), then 01 Problem → 02 Approach (prose + highlights) → 03 Architecture → 04 Hard parts (prose + snippets) → 05 Result, each with a sticky mono label column; prev/next pager at the bottom (wraps around: 01's prev is 04).
+  - Architecture diagram per project, from content: layered left → right once the diagram is ≥ 40rem wide (Kahn + the hero's `layoutDag`), a top → bottom spine below that (edges in a left gutter, one lane per overlapping span). Return edges (`back: true`, e.g. Forgefort's SSE) route under the diagram / in the gutter, in accent, labelled. Edges draw on scroll (GSAP timeline scrubbed by ScrollTrigger; edges leaving each Kahn level draw together, reached nodes light up). Text alternative in a `figcaption`.
+  - Shiki snippets on the server (cached), token colours mapped onto design tokens, line numbers, highlighted lines with an accent rule; long lines scroll inside the box.
+  - Shared-element transition: the card preview morphs into the case-study hero (React `<ViewTransition>`, only on card → case study). Without the View Transitions API, an accent curtain wipe covers and reveals the swap. Reduced motion: instant.
+  - "← work" steps back through history when the visitor came from that card (exact scroll restore), else navigates to `/#work`.
+  - Navbar section links work from case studies (`/#id` client navigations).
+- Verified (headless Chrome via CDP; production build, plus a dev-server pass):
+  - All four slugs 200 and fully in the static HTML (no Suspense fallback swap); `/work/nope` → 404.
+  - Zero console errors/warnings (prod and dev, including Next's instant-navigation validation); no horizontal overflow at 360, 768, 1440; every tap target in `main` ≥ 44px; light theme checked.
+  - Diagram: wide mode at 768 and 1440, spine at 360; edges at dashoffset 1 before the section, partially drawn mid-scroll, 0 once past; SSE label visible while the whole diagram is on screen.
+  - Card → case study runs one view transition (morph captured mid-flight); next/prev and back run none.
+  - "← work" returns to the exact scroll position (y 1379 → 1379); browser back restores the stack position (y 3179 → 3179); "← work" without an origin lands with `#work` at the top; navbar → `/#principles` from a case study lands on the section.
+  - API removed (`startViewTransition` deleted): curtain cover → reveal → idle on open, next/prev, and "← work" (history back included).
+  - Reduced motion: navigation instant, diagram static and complete.
+  - Homepage unchanged: Phase 3 stack test re-run at 1440 and 360.
+  - `npm run build`, `npm run lint`, `npx tsc --noEmit` clean.
+- Key files:
+  - `app/work/[slug]/page.tsx`: static params, metadata, `ensureStatic`, `instant = false` (see DECISIONS).
+  - `components/case-study/case-study.tsx` (server): layout, `Chapter`, `Prose` (renders placeholders visibly), meta, pager.
+  - `components/case-study/architecture-diagram.tsx` (client): measure → route edges in px → scrubbed timeline.
+  - `components/case-study/code-snippet.tsx` (server) + `lib/highlight.ts` (Shiki singleton, JS regex engine, `"use cache"` + `cacheLife("max")`).
+  - `components/case-study/case-study-links.tsx`: `BackToWork`, `AdjacentLink`.
+  - `lib/graph/diagram.ts`: pure diagram model (Kahn order, layered layout, draw steps, spine lanes).
+  - `lib/transition.ts`: `mediaTransition(slug)` props, `OPEN_CASE_STUDY` type, work-origin flag, curtain store (`coverThen`, `revealCurtain`).
+  - `components/shared/transition-link.tsx`: next/link that falls back to the curtain. `components/layout/route-curtain.tsx`: the curtain (mounted in the root layout).
+  - `app/globals.css`: new "Case studies" block (`.arch*`, `.code-snippet` + `--shiki-*` mapping) and "Route transitions" block (`::view-transition*`, `site-nav`, `.route-curtain`).
+- Conventions introduced:
+  - Internal route changes between `/` and `/work/*` use `TransitionLink` (or `BackToWork` / `AdjacentLink`), never bare `next/link`, so browsers without the View Transitions API get the curtain. Phase 6 route curtains can reuse `coverThen` / `RouteCurtain` as-is.
+  - Shared elements: spread `mediaTransition(slug)` on a `<ViewTransition>` at both ends. Morphs are keyed by transition type (`share: { [type]: class, default: "none" }`), so only the navigation that carries the type morphs.
+  - Links into case studies use `prefetch` (true): the morph needs the destination in the navigation's commit, and Partial Prefetching otherwise fetches only the App Shell.
+  - The navbar header is `view-transition-name: site-nav` and held still during transitions.
+  - Diagram edges are drawn by default in CSS; GSAP undraws and scrubs them, so reduced motion and no-JS get the finished diagram. Diagram mode is read from CSS (`.arch-node` position), never duplicated in JS.
+  - Snippet code in content starts with `// [[REPLACE WITH REAL CODE]] illustrative only`; `highlight` line numbers count that line.
+  - `lib/transition.ts` is server-safe (no DOM at import), so server components can use `mediaTransition`.
+- Known issues:
+  - Diagram routing ignores level-skipping forward edges (none in current content): they would draw as a plain elbow that can cross a node. `layoutDag` already computes waypoints if this is ever needed.
+  - Diagram nodes clamp details to two lines in wide mode; keep `detail` short (about 30 characters).
+  - Every navigation into a case study is allowed to block (`instant = false`) and is instant only thanks to `prefetch`. A future `router.push("/work/…")` (e.g. the Phase 6 palette) should `router.prefetch` first, or accept a short wait.
+  - Browser back/forward never morphs (no transition type). Without the View Transitions API, back/forward swap instantly (there's no hook to cover before a popstate).
+  - Headless only: the fallback was checked in Chrome with the API deleted to simulate other browsers. Real Safari/Firefox not tested.
+  - A direct visit to a case study still runs the once-per-session boot preloader (by design, on any first page).
+- Placeholders added:
+  - Snippet code ×5 replaced with illustrative code, still marked `[[REPLACE WITH REAL CODE]]` on line 1 (forgefort `engine/kahn.ts`, `engine/stream.ts`; price-optimizer `api/recommend.ts`; ticket-tracker `middleware/validate.ts`; backend-ledger `services/transfer.ts`).
+  - Now visible on every case study: `role`, `problem`, `approach`, `hardParts`, `result` (×4 each, rendered as a dashed `[[PLACEHOLDER]] · <field>` block), `repoUrl` ×4, preview media ×4 (tokened poster).

@@ -1,17 +1,18 @@
 "use client";
 
-import Link from "next/link";
-import { memo, useId, useState } from "react";
+import { memo, useId, useState, ViewTransition } from "react";
 import { motion } from "motion/react";
 
 import type { Project } from "@/content/site";
 import type { ResolvedMedia } from "@/lib/media";
 import { cn } from "@/lib/utils";
 import { duration, ease, reducedFade, spring } from "@/lib/motion";
+import { mediaTransition, OPEN_CASE_STUDY, setWorkOrigin } from "@/lib/transition";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { Magnetic } from "@/components/motion";
 import { Badge } from "@/components/ui/badge";
 import { PreviewVideo } from "@/components/work/preview-video";
+import { TransitionLink } from "@/components/shared/transition-link";
 
 /** Stack badges shown on phones before collapsing into "+N". */
 const MOBILE_BADGES = 4;
@@ -139,23 +140,28 @@ export const ProjectCard = memo(function ProjectCard({
         </div>
       </header>
 
-      <PreviewVideo
-        media={media}
-        name={project.name}
-        index={project.index}
-        slug={project.slug}
-        hold={covered}
-        eager={eager}
-        sizes="(min-width: 1024px) 80vw, 100vw"
-        className="rounded-lg lg:rounded-t-none"
-        controlClassName="right-2 bottom-2 lg:right-4 lg:bottom-4"
-      />
+      {/* Morphs into the case-study hero when the card is opened. */}
+      <ViewTransition {...mediaTransition(project.slug)}>
+        <PreviewVideo
+          media={media}
+          name={project.name}
+          index={project.index}
+          slug={project.slug}
+          hold={covered}
+          eager={eager}
+          sizes="(min-width: 1024px) 80vw, 100vw"
+          className="rounded-lg lg:rounded-t-none"
+          controlClassName="right-2 bottom-2 lg:right-4 lg:bottom-4"
+        />
+      </ViewTransition>
 
       {/* Card link: covers the card, under the panel's interactive bits. */}
-      <Link
+      <TransitionLink
         href={`/work/${project.slug}`}
-        // TODO(phase 4): drop once /work/[slug] exists; until then prefetching logs 404s.
-        prefetch={false}
+        // Full prefetch: the morph needs the case study ready in the navigation's commit.
+        prefetch
+        transitionTypes={[OPEN_CASE_STUDY]}
+        onNavigate={() => setWorkOrigin(project.slug)}
         data-cursor="view"
         aria-label={`${project.name} — case study`}
         className="group/link absolute inset-0 z-1 rounded-lg"
@@ -166,7 +172,7 @@ export const ProjectCard = memo(function ProjectCard({
         >
           view ↗
         </span>
-      </Link>
+      </TransitionLink>
 
       {/* Solid panel, no glass. Grows upward over the video on desktop. */}
       <motion.div

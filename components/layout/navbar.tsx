@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ComponentProps } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { site } from "@/content/site";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,21 @@ import {
 } from "@/components/ui/sheet";
 
 const navSections = site.sections.filter((s) => s.nav);
+
+/** True on the homepage, where section links are in-page anchors. */
+const useOnHome = () => usePathname() === "/";
+
+/**
+ * A link to a homepage section: a plain `#id` anchor on the homepage
+ * (smoothed by Lenis), a client navigation to `/#id` from other routes.
+ */
+function SectionLink({
+  id,
+  onHome,
+  ...props
+}: Omit<ComponentProps<"a">, "href"> & { id: string; onHome: boolean }) {
+  return onHome ? <a href={`#${id}`} {...props} /> : <Link href={`/#${id}`} {...props} />;
+}
 
 /** Hidden while scrolling down past the fold, shown on any scroll up. */
 function useHideOnScroll(threshold = 120) {
@@ -110,6 +127,7 @@ function PaletteHint({ compact = false }: { compact?: boolean }) {
 function MobileMenu() {
   const [open, setOpen] = useState(false);
   const lenis = useLenis();
+  const onHome = useOnHome();
 
   const onOpenChange = (next: boolean) => {
     setOpen(next);
@@ -118,8 +136,10 @@ function MobileMenu() {
   };
 
   const go = (event: React.MouseEvent<HTMLAnchorElement>, id: string) => {
-    event.preventDefault();
     onOpenChange(false);
+    // Off the homepage, the link navigates to /#id itself.
+    if (!onHome) return;
+    event.preventDefault();
     // Let the sheet release its scroll lock before moving.
     requestAnimationFrame(() => scrollToId(id, lenis));
   };
@@ -156,14 +176,15 @@ function MobileMenu() {
           <ul className="flex flex-col">
             {navSections.map((section) => (
               <li key={section.id} className="border-b border-line">
-                <a
-                  href={`#${section.id}`}
+                <SectionLink
+                  id={section.id}
+                  onHome={onHome}
                   onClick={(e) => go(e, section.id)}
                   className="flex min-h-16 items-baseline gap-4 py-3"
                 >
                   <span className="font-mono text-meta text-fg-muted">{section.index}</span>
                   <span className="font-display text-display-m">{section.label}</span>
-                </a>
+                </SectionLink>
               </li>
             ))}
           </ul>
@@ -191,10 +212,13 @@ export function Navbar() {
   const scrolledAway = useHideOnScroll();
   const [focusWithin, setFocusWithin] = useState(false);
   const hidden = scrolledAway && !focusWithin;
+  const onHome = useOnHome();
 
   return (
     <>
       <header
+        // Held still during route view transitions (globals.css → site-nav).
+        style={{ viewTransitionName: "site-nav" }}
         // Keep the bar visible while a keyboard user is inside it.
         onFocus={(e) => setFocusWithin(e.target.matches(":focus-visible"))}
         onBlur={(e) => {
@@ -206,9 +230,10 @@ export function Navbar() {
         )}
       >
         <div className="container-site flex h-full items-center">
-          <a
-            href="#index"
-            aria-label={`${site.profile.name} — back to top`}
+          <SectionLink
+            id="index"
+            onHome={onHome}
+            aria-label={onHome ? `${site.profile.name} — back to top` : `${site.profile.name} — home`}
             className="inline-flex h-11 items-center gap-3 font-mono text-meta"
           >
             <span>
@@ -216,21 +241,22 @@ export function Navbar() {
               <span className="text-accent-ink">/</span>
             </span>
             <span className="hidden text-fg-muted md:inline">{site.profile.domain}</span>
-          </a>
+          </SectionLink>
 
           <nav aria-label="Primary" className="ml-auto hidden md:block">
             <ul className="flex items-center gap-6 lg:gap-8">
               {navSections.map((section) => (
                 <li key={section.id}>
-                  <a
-                    href={`#${section.id}`}
+                  <SectionLink
+                    id={section.id}
+                    onHome={onHome}
                     className="group inline-flex h-11 items-center gap-2 font-mono text-meta"
                   >
                     <span className="text-fg-muted">{section.index}</span>
                     <span className="text-fg-muted transition-colors duration-(--dur-instant) group-hover:text-fg">
                       {section.label.toLowerCase()}
                     </span>
-                  </a>
+                  </SectionLink>
                 </li>
               ))}
             </ul>
