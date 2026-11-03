@@ -68,7 +68,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {/* Decides before first paint whether the boot preloader runs. */}
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
       </head>
-      <body>
+      {/* Extensions (e.g. Grammarly) add attributes to <body> before hydration. */}
+      <body suppressHydrationWarning>
         <Providers>
           <Preloader />
           <a
