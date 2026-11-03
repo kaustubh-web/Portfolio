@@ -115,7 +115,7 @@ function PaletteHint({ compact = false }: { compact?: boolean }) {
       onClick={openPalette}
       aria-label="Open command palette"
       aria-keyshortcuts={apple ? "Meta+K" : "Control+K"}
-      className="inline-flex h-11 items-center px-2 text-fg-muted transition-colors duration-(--dur-instant) hover:text-fg"
+      className="inline-flex h-11 min-w-11 shrink-0 items-center justify-center px-2 text-fg-muted transition-colors duration-(--dur-instant) hover:text-fg"
     >
       <kbd className="rounded-xs border border-line-strong px-1.5 py-0.5 font-mono text-meta normal-case">
         {/* Compact (touch) form is a glyph, not a shortcut. */}
@@ -235,7 +235,7 @@ export function Navbar() {
             id="index"
             onHome={onHome}
             aria-label={onHome ? `${site.profile.name} — back to top` : `${site.profile.name} — home`}
-            className="inline-flex h-11 items-center gap-3 font-mono text-meta"
+            className="inline-flex h-11 min-w-11 items-center gap-3 font-mono text-meta"
           >
             <span>
               {site.profile.initials}

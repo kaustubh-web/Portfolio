@@ -24,9 +24,22 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps<"/work/[slug]">): Promise<Metadata> {
   const project = getProject((await params).slug);
   if (!project) return {};
+  const title = `${project.name} — case study · ${site.profile.name}`;
+  const url = `/work/${project.slug}`;
+  // openGraph/twitter replace the root objects, so repeat the shared fields.
   return {
-    title: `${project.name} — case study · ${site.profile.name}`,
+    title,
     description: project.pitch,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "article",
+      url,
+      siteName: site.profile.name,
+      title,
+      description: project.pitch,
+      locale: "en_US",
+    },
+    twitter: { card: "summary_large_image", title, description: project.pitch },
   };
 }
 

@@ -18,12 +18,6 @@ export const ease = {
   inOut: [0.76, 0, 0.24, 1],
 } as const satisfies Record<string, [number, number, number, number]>;
 
-/** GSAP string forms of the same curves. */
-export const gsapEase = {
-  out: "expo.out",
-  inOut: "power4.inOut",
-} as const;
-
 export const stagger = {
   letters: 0.025,
   lines: 0.08,

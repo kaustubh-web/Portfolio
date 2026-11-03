@@ -83,10 +83,10 @@ export function Hero() {
         <div className="col-span-full flex flex-col gap-8 md:col-span-6 lg:col-span-7 lg:justify-between lg:gap-12">
           <HeroName />
           <div className="flex flex-col items-start gap-6">
-            {/* A clip-path wipe, not a fade: it is the LCP element, and Chrome only
-                records text revealed by compositor-only opacity/transform at the next
-                main-thread paint (hydration). A wipe is recorded when it appears. */}
-            <p className="hero-wipe max-w-[34ch] text-lead text-fg-muted" style={at(300)}>
+            {/* No entrance: this is the LCP element. Any reveal (even the earlier
+                clip-path wipe) waits on a main thread busy with hydration, which put
+                mobile LCP at 4s in Lighthouse. Static, it paints with FCP. */}
+            <p className="max-w-[34ch] text-lead text-fg-muted">
               {profile.roleLine}
             </p>
             <div className="hero-in" style={at(500)}>

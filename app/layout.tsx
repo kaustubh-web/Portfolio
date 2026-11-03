@@ -8,15 +8,14 @@ import { Navbar } from "@/components/layout/navbar";
 import { GrainOverlay, GridOverlay } from "@/components/layout/overlays";
 import { Preloader } from "@/components/layout/preloader";
 import { RouteCurtain } from "@/components/layout/route-curtain";
-import { CommandPalette } from "@/components/layout/command-palette";
-import { Terminal } from "@/components/layout/terminal";
+import { LazyOverlays } from "@/components/layout/lazy-overlays";
 import { Cursor } from "@/components/layout/cursor";
 import { bootScript } from "@/lib/boot-config";
 
 const display = Instrument_Serif({
   variable: "--font-instrument-serif",
   weight: "400",
-  style: ["normal", "italic"],
+  style: "normal",
   subsets: ["latin"],
   display: "swap",
 });
@@ -33,9 +32,28 @@ const mono = Geist_Mono({
   display: "swap",
 });
 
+// OG/Twitter images come from the opengraph-image / twitter-image files.
 export const metadata: Metadata = {
+  metadataBase: new URL(site.meta.url),
   title: site.meta.title,
   description: site.meta.description,
+  applicationName: site.profile.name,
+  authors: [{ name: site.profile.name, url: site.meta.url }],
+  creator: site.profile.name,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: site.profile.name,
+    title: site.meta.title,
+    description: site.meta.description,
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: site.meta.title,
+    description: site.meta.description,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -62,8 +80,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Navbar />
           {children}
           <GridOverlay />
-          <CommandPalette />
-          <Terminal />
+          <LazyOverlays />
           <Cursor />
           <RouteCurtain />
           <GrainOverlay />

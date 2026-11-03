@@ -400,8 +400,8 @@
   }
 }
 
-/* Hero: 0 name · 300 role · 500 chip, CTAs, graph · 2600 scroll cue.
-   Opacity fades are kept to small elements (see .hero-wipe). */
+/* Hero: 0 name · 500 chip, CTAs, graph · 2600 scroll cue.
+   The role line (LCP) has no entrance; opacity fades are kept to small elements. */
 .hero-line {
   display: block;
   overflow: clip;
@@ -415,13 +415,6 @@
   animation-delay: calc(var(--hero-t0) + var(--i, 0) * 25ms);
 }
 
-/* Top-down wipe for the role line (the LCP element; see hero.tsx).
-   clip-path only: adding a transform makes Chrome miss it for LCP again. */
-.hero-wipe {
-  animation: hero-wipe var(--dur-slow) var(--ease-out) both;
-  animation-delay: calc(var(--hero-t0) + var(--d, 0ms));
-}
-
 .hero-in {
   animation: hero-in var(--dur-slow) var(--ease-out) both;
   animation-delay: calc(var(--hero-t0) + var(--d, 0ms));
@@ -429,10 +422,6 @@
 
 :root[data-boot="skip"] .hero-letter {
   animation-name: hero-rise-skip;
-}
-
-:root[data-boot="skip"] .hero-wipe {
-  animation-name: hero-wipe-skip;
 }
 
 :root[data-boot="skip"] .hero-in {
@@ -448,18 +437,6 @@
 @keyframes hero-rise-skip {
   from {
     transform: translateY(110%);
-  }
-}
-
-@keyframes hero-wipe {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-}
-
-@keyframes hero-wipe-skip {
-  from {
-    clip-path: inset(0 0 100% 0);
   }
 }
 
@@ -480,7 +457,6 @@
 /* Reduced motion: every hero entrance is one 150ms fade, no delay. */
 @media (prefers-reduced-motion: reduce) {
   .hero-letter,
-  .hero-wipe,
   .hero-in {
     animation: reduced-fade 150ms linear both !important;
   }

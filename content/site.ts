@@ -182,14 +182,14 @@ export const site: Site = {
     title: "Kaustubh Bramhe — Full-stack developer",
     description:
       "Full-stack developer building reliable backends, workflow engines, and LLM-powered products.",
-    url: "[[PLACEHOLDER]]",
+    url: "https://kaustubh-bramhe.vercel.app",
   },
 
   profile: {
     name: "Kaustubh Bramhe",
     nameLines: ["Kaustubh", "Bramhe"],
     initials: "kb",
-    domain: "kaustubh.dev",
+    domain: "kaustubh-bramhe",
     role: "Full-stack developer",
     roleLine:
       "Full-stack developer building reliable backends, workflow engines, and LLM-powered products.",
@@ -222,7 +222,7 @@ export const site: Site = {
   ],
 
   boot: [
-    "initializing kaustubh.dev…",
+    "initializing kaustubh-bramhe…",
     "resolving dependencies… ok",
     "compiling graph (8 nodes)… ok",
     "ready",
@@ -685,7 +685,7 @@ return row?.balance ?? 0; // derived`,
   terminal: {
     prompt: "kaustubh@dev: ~",
     whoami: "kaustubh bramhe — full-stack developer",
-    greeting: "kaustubh.dev shell · type help for commands · esc to close",
+    greeting: "kaustubh-bramhe shell · type help for commands · esc to close",
     commands: [
       { name: "help", description: "list commands" },
       { name: "whoami", description: "who runs this machine" },

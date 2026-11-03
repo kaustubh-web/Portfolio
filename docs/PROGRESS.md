@@ -7,7 +7,7 @@
 - [x] Phase 4 — Case Studies
 - [x] Phase 5 — Remaining Sections
 - [x] Phase 6 — Signature Interactions
-- [ ] Phase 7 — Polish & Ship
+- [x] Phase 7 — Polish & Ship
 
 ## Handoff notes
 
@@ -319,3 +319,87 @@ Each phase appends one block, newest last:
   - Dev only: a cross-route push takes ~1s on first compile, so the curtain holds longer in dev than in production (~0.5s).
   - Real Safari/Firefox and real touch devices still not tested (headless Chrome only).
 - Placeholders added: none new. Now also visible in the palette (Social, disabled) and the terminal `contact`: socials ×3. Resume PDF still pending.
+
+### Phase 7 — Polish & Ship (2026-11-03)
+- Built:
+  - Domain: no custom domain yet. `meta.url` = https://kaustubh-bramhe.vercel.app; the displayed `kaustubh.dev` is now `kaustubh-bramhe` (navbar, preloader boot line, terminal greeting).
+  - SEO:
+    - root metadata (`metadataBase`, canonical, Open Graph, `summary_large_image` Twitter card)
+    - per-case-study canonical, OG `article` and Twitter fields
+    - dynamic OG and Twitter images for `/` and every `/work/[slug]` (`next/og`, prerendered)
+    - `sitemap.xml` (home + 4 case studies), `robots.txt`
+    - JSON-LD Person on `/`
+    - SVG favicon in place of the Next.js default
+  - Performance:
+    - The hero role line (LCP element) renders static.
+    - The palette and terminal are code-split (`next/dynamic`) and mount when the browser is idle.
+    - The unused Instrument Serif italic was dropped, leaving three preloaded fonts, all used in the hero.
+  - Reduced-motion and responsive pass (below). Navbar tap-target fixes.
+  - Dead code removed: shadcn `command` / `input-group` / `input` / `textarea`, `gsapEase`, and the `.hero-wipe` CSS. Every dependency is in use.
+  - README: setup, project layout, editing `content/site.ts`, adding a project, ffmpeg commands (webm + mp4 under 2 MB, plus WebP poster and archive stills), Vercel deploy, and adding a custom domain later.
+- Verified (production build via `next start`, headless Chrome):
+  - Lighthouse 13.6, simulated throttling, measured on AC power (host benchmarkIndex ≈ 2650):
+
+    | Page | Mobile P / A / BP / SEO | Desktop P / A / BP / SEO | Mobile LCP · TBT · CLS |
+    |---|---|---|---|
+    | `/` | 97–99 / 100 / 100 / 100 (two runs) | 100 / 100 / 100 / 100 | 0.9–1.0s · 80–90ms · 0 |
+    | `/work/forgefort` | 98 / 100 / 100 / 100 | 100 / 100 / 100 / 100 | 0.9s · 130ms · 0 |
+    | `/work/price-optimizer` | 99 / 100 / 100 / 100 | 100 / 100 / 100 / 100 | 0.9s · 110ms · 0 |
+    | `/work/ticket-tracker` | 100 / 100 / 100 / 100 | 100 / 100 / 100 / 100 | 0.9s · 80ms · 0 |
+    | `/work/backend-ledger` | 99 / 100 / 100 / 100 | 100 / 100 / 100 / 100 | 0.9s · 110ms · 0 |
+
+    - Before the role-line and code-split fixes, `/` on mobile was 82 (LCP 4.0s, TBT 200ms).
+    - Changes made after these runs were runtime-neutral or lighter: italic font dropped, unused files and exports deleted, navbar sizing classes.
+  - The same pages were re-run after the session restart, on battery (Balanced plan, benchmarkIndex ≈ 490–580, so the CPU was about 5× slower):
+    - Accessibility, Best Practices and SEO were still 100 everywhere.
+    - Performance was 67–74 on mobile and 94–100 on desktop, from TBT inflated by the throttled host.
+    - LCP was still 1.1–1.8s, CLS 0.
+    - Re-run on AC power to confirm the table.
+  - Responsive and reduced-motion pass: 30 runs (360 / 390 / 768 / 1024 / 1440 × `/`, `/work/forgefort`, `/work/backend-ledger` × motion on / reduce). Each scrolled end to end.
+    - Horizontal overflow 0 everywhere, zero console errors or warnings.
+    - Under reduced motion: zero running animations, no Lenis, no custom cursor, no preloader.
+    - Tap targets ≥ 44px everywhere, after the navbar fixes. The only sub-44 readings are links on stack cards 01–03, which end the scroll covered and scaled to 0.92 (44 × 0.92); card 04 on top measures 44.
+  - SEO output:
+    - Canonical, `og:*` and `twitter:*` tags carry absolute vercel.app URLs.
+    - OG images are 1200×630 PNG, visually checked for home and two case studies.
+    - Sitemap lists 5 URLs, and robots.txt points at it.
+    - JSON-LD is valid JSON with `sameAs: []` until the socials are real.
+  - Acceptance grep (GPA / CGPA / 8.39 / phone): zero hits in code, content and served HTML. Only the rule text in CLAUDE.md / SPEC.md / PLAN.md matches.
+  - `npm run build` (PowerShell), `npm run lint` and `npx tsc --noEmit` are clean. All 21 routes prerender (`/`, 4 case studies, 8 OG/Twitter case-study images, home OG/Twitter, icon, sitemap, robots, 404).
+- Key files:
+  - `app/opengraph-image.tsx`, `app/twitter-image.tsx`, `app/work/[slug]/opengraph-image.tsx`, `app/work/[slug]/twitter-image.tsx`, `lib/og.tsx`, `assets/fonts/*.ttf`.
+  - `app/sitemap.ts`, `app/robots.ts`, `app/icon.svg`, metadata in `app/layout.tsx` and `app/work/[slug]/page.tsx`, JSON-LD in `app/page.tsx`.
+  - `components/layout/lazy-overlays.tsx`.
+  - `README.md`.
+- Conventions introduced:
+  - Site-wide URLs derive from `site.meta.url`. Never hard-code the host.
+  - OG renderer colors live in `lib/og.tsx` (`token`), a mirror of the dark theme. Update it if the tokens change.
+  - Heavy, non-critical client UI mounts through `LazyOverlays`-style idle mounting. State it needs must live in a store, so early requests aren't lost.
+  - LCP text gets no entrance animation.
+- Known issues:
+  - ⌘K / `~` do nothing until the overlays mount (idle, at most ~3s after load). In Chrome, Ctrl+K in that window focuses the address bar.
+  - Lighthouse numbers in the table were taken on AC power. On battery this laptop throttles about 5×, and mobile Performance falls to around 70 (TBT).
+  - Old `next start` / `next dev` servers from earlier sessions were still running on ports 3100, 3123, 3124 and 3125 (left untouched). This session used 3140.
+  - Real Safari/Firefox and real touch devices are still untested (headless Chrome only).
+  - The custom cursor still hides the I-beam over prose (Phase 6).
+  - `npm audit` moderate advisories in scaffold dependencies are unchanged.
+- Placeholders added: none. Remaining (final list):
+  - `content/site.ts`:
+    - socials: GitHub, LinkedIn, LeetCode `href`
+    - `repoUrl` ×4 (forgefort, price-optimizer, ticket-tracker, backend-ledger)
+    - case study `role` / `problem` / `approach` / `hardParts` / `result` ×4 (shared `pendingCaseStudy`)
+    - snippet `code` ×5 marked `[[REPLACE WITH REAL CODE]]` (illustrative code)
+    - archive `year` ×5, `href` ×5, Smart Resume Screener `stack`
+    - Now `building`, `learning`, `updated`
+  - Assets not yet in `public/`:
+    - `Kaustubh_Bramhe_Resume.pdf`
+    - `work/<slug>.{webm,mp4,webp}` ×4
+    - `archive/{event-booking,creator-intelligence,resume-screener,ambulance-routing,nodejs-course}.webp`
+- Compromises:
+  - The role line lost its entrance wipe (LCP).
+  - Overlay shortcuts wait for idle (bundle).
+  - The OG image uses a hard-coded color mirror (satori has no CSS vars).
+  - The OG images are dark-theme only.
+  - Lighthouse was verified on desktop Chrome with simulated mobile throttling, not on a real phone.
+
+**Project status: complete.** All phases 0–7 are done. What remains is content: the placeholders above.
