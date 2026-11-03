@@ -49,7 +49,7 @@ Everything visible on the site lives in [`content/site.ts`](content/site.ts): pr
 - `profile.domain` is the short name shown in the navbar, preloader and terminal.
 - Socials: set real URLs in `socials`. JSON-LD `sameAs` picks up every non-placeholder URL automatically.
 - Resume: drop the PDF at `public/Kaustubh_Bramhe_Resume.pdf`. `/resume` redirects to it (307, so a new file is never cached away).
-- Now: update `now.rows` and `now.updated`. The footer's © year is `footer.year`.
+- Now: update `now.rows` and `now.updated` (while `updated` is a placeholder, the "· updated" text is left out). The footer's © year is `footer.year`.
 - Principle snippets: keep lines ≤ 40 characters (they sit in half-width cards at 1440px).
 - **Never add grades or a phone number** anywhere (hard rule, see CLAUDE.md).
 
@@ -69,6 +69,8 @@ No component changes are needed.
 The card stack, case-study route, next/prev pager, palette "Go to" entries, terminal `projects`, sitemap and OG image all follow from the array.
 
 Archive rows (`archive`) take `year`, `name`, `stack`, `href` and a 4:3 preview at `public/archive/<name>.webp`.
+
+Archive values left as `[[PLACEHOLDER]]` (years, links, a missing stack) render as empty cells, so the list shows only what's known; fill them in and they appear. To hide a whole section, set `hidden: true` on its entry in `sections`: it drops out of the page, navbar and ⌘K palette, and the sections after it renumber automatically.
 
 ## Preview media
 

@@ -1,4 +1,4 @@
-import { isPlaceholder, site } from "@/content/site";
+import { isPlaceholder, isSectionVisible, site } from "@/content/site";
 import { Hero } from "@/components/sections/hero";
 import { StackBand } from "@/components/sections/stack-band";
 import { Work } from "@/components/sections/work";
@@ -42,7 +42,7 @@ export default function Home() {
       <StackBand />
       <Work />
       <Principles />
-      <Archive />
+      {isSectionVisible("archive") && <Archive />}
       <Education />
       <Now />
       <Contact />

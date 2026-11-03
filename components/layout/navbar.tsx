@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore, type ComponentProps } from "react";
 import { usePathname } from "next/navigation";
 
-import { site } from "@/content/site";
+import { site, visibleSections } from "@/content/site";
 import { cn } from "@/lib/utils";
 import { openPalette } from "@/lib/events";
 import { scrollToId } from "@/lib/scroll";
@@ -20,7 +20,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const navSections = site.sections.filter((s) => s.nav);
+// Numbered by position in the nav, so skipped sections (Education, Now) leave no gap.
+const navSections = visibleSections
+  .filter((s) => s.nav)
+  .map((s, i) => ({ ...s, index: String(i + 1).padStart(2, "0") }));
 
 /** True on the homepage, where section links are in-page anchors. */
 const useOnHome = () => usePathname() === "/";

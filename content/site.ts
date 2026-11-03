@@ -46,6 +46,8 @@ export type Section = {
   titleLines?: string[];
   /** Shown in the navbar. */
   nav: boolean;
+  /** Left out of the page, navbar and palette; later sections renumber. */
+  hidden?: boolean;
 };
 
 export type GraphNode = {
@@ -147,7 +149,7 @@ export type Site = {
   education: Education;
   certifications: Certification[];
   now: Now;
-  footer: { builtWith: string; terminalHint: string; version: string; year: string };
+  footer: { terminalHint: string; version: string; year: string };
   terminal: {
     prompt: string;
     whoami: string;
@@ -666,14 +668,13 @@ return row?.balance ?? 0; // derived`,
   now: {
     updated: "[[PLACEHOLDER]]",
     rows: [
-      { key: "building", value: "[[PLACEHOLDER]]" },
-      { key: "learning", value: "[[PLACEHOLDER]]" },
+      { key: "building", value: "Authentication system" },
+      { key: "learning", value: "TypeScript" },
       { key: "status", value: "open to SDE and full-stack roles for 2027", live: true },
     ],
   },
 
   footer: {
-    builtWith: "Built with Next.js, GSAP, Motion",
     terminalHint: "press ~ for a terminal",
     version: "v1 · 2026",
     year: "2026",
@@ -705,8 +706,22 @@ export const PLACEHOLDER = "[[PLACEHOLDER]]";
 export const isPlaceholder = (value: string | undefined): boolean =>
   !value || value.includes("[[");
 
+/**
+ * Sections on the page, in order. Numbered labels ("01"…) are reassigned in
+ * order, so hiding one never leaves a gap; "00" (hero) and unnumbered bands keep theirs.
+ */
+export const visibleSections: Section[] = (() => {
+  let n = 0;
+  return site.sections
+    .filter((s) => !s.hidden)
+    .map((s) => (s.index && s.index !== "00" ? { ...s, index: String(++n).padStart(2, "0") } : s));
+})();
+
+export const isSectionVisible = (id: SectionId): boolean => visibleSections.some((s) => s.id === id);
+
+/** The section as shown (renumbered); a hidden one comes back as written in content. */
 export const getSection = (id: SectionId): Section => {
-  const section = site.sections.find((s) => s.id === id);
+  const section = visibleSections.find((s) => s.id === id) ?? site.sections.find((s) => s.id === id);
   if (!section) throw new Error(`Unknown section: ${id}`);
   return section;
 };

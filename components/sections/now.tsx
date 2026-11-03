@@ -19,8 +19,13 @@ export function Now() {
           <h2 id="now-title">{sectionLabel(section)}</h2>
           <span aria-hidden className="h-px min-w-8 flex-1 bg-line" />
           <p>
-            <LiveClock /> · updated{" "}
-            {isPlaceholder(now.updated) ? "[[PLACEHOLDER]]" : <time>{now.updated}</time>}
+            <LiveClock />
+            {!isPlaceholder(now.updated) && (
+              <>
+                {" "}
+                · updated <time>{now.updated}</time>
+              </>
+            )}
           </p>
         </div>
 

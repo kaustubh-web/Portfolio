@@ -59,11 +59,10 @@ export function Contact() {
           <p>
             {profile.location} · {profile.timezone.label}
           </p>
-          <p className="md:text-right">{footer.builtWith}</p>
-          <p>
+          <TerminalHint label={footer.terminalHint} className="pointer-coarse:hidden md:justify-self-end" />
+          <p className="md:col-start-1">
             © {footer.year} {profile.name}
           </p>
-          <TerminalHint label={footer.terminalHint} className="pointer-coarse:hidden md:justify-self-end" />
         </div>
       </div>
     </section>

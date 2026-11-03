@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { Command } from "cmdk";
 import { Dialog as DialogPrimitive } from "radix-ui";
 
-import { isPlaceholder, PLACEHOLDER, site } from "@/content/site";
+import { isPlaceholder, PLACEHOLDER, site, visibleSections } from "@/content/site";
 import { copyEmail } from "@/lib/clipboard";
 import { closeOverlay, getOverlay, openPalette, openTerminal, useOverlay } from "@/lib/events";
 import { getCurtain } from "@/lib/transition";
@@ -45,7 +45,7 @@ function filter(_value: string, search: string, keywords: string[] = []) {
   return keywords.join(" ").toLowerCase().includes(query) ? 0.3 : 0;
 }
 
-const goSections = site.sections.filter((s) => s.index && s.index !== "00");
+const goSections = visibleSections.filter((s) => s.index && s.index !== "00");
 
 /**
  * ⌘K / Ctrl+K palette (cmdk inside a Radix dialog). Top third, 560px on

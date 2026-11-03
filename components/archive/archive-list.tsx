@@ -15,11 +15,9 @@ const pad = (n: number) => String(n).padStart(2, "0");
 /** Gap between the cursor and the preview, in px. */
 const OFFSET = 24;
 
-/** A content value, or the visible placeholder marker when it's unknown. */
+/** A content value; unknown (placeholder) values render nothing. */
 function Value({ text, className }: { text: string; className?: string }) {
-  if (isPlaceholder(text)) {
-    return <span className="font-mono text-sm text-fg-muted">[[PLACEHOLDER]]</span>;
-  }
+  if (isPlaceholder(text)) return null;
   return <span className={className}>{text}</span>;
 }
 
