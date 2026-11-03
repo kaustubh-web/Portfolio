@@ -182,12 +182,12 @@ export const site: Site = {
     title: "Kaustubh Bramhe — Full-stack developer",
     description:
       "Full-stack developer building reliable backends, workflow engines, and LLM-powered products.",
-    url: "https://kaustubh-bramhe.vercel.app",
+    url: "https://kaustubh.vercel.app",
   },
 
   profile: {
     name: "Kaustubh Bramhe",
-    initials: "kb",
+    initials: "KB",
     domain: "kaustubh-bramhe",
     role: "Full-stack developer",
     roleLine:
@@ -200,13 +200,13 @@ export const site: Site = {
       label: "open to SDE & full-stack roles · 2027",
       short: "open · SDE & full-stack · 2027",
     },
-    resume: { href: "/Kaustubh_Bramhe_Resume.pdf", route: "/resume" },
+    resume: { href: "https://drive.google.com/file/d/1juNGm-woW6gVyIv9FZhMOQeFsAHGwCfJ/view?usp=sharing", route: "/resume" },
   },
 
   socials: [
-    { label: "GitHub", href: "[[PLACEHOLDER]]" },
-    { label: "LinkedIn", href: "[[PLACEHOLDER]]" },
-    { label: "LeetCode", href: "[[PLACEHOLDER]]" },
+    { label: "GitHub", href: "https://github.com/kaustubh-web" },
+    { label: "LinkedIn", href: "https://www.linkedin.com/in/kaustubh-bramhe-1b7565291/" },
+    { label: "LeetCode", href: "https://leetcode.com/u/Kaustubh_03/" },
   ],
 
   sections: [
@@ -294,7 +294,7 @@ export const site: Site = {
         "Outbound HTTP nodes hardened with SSRF protection and safe expression resolution, behind JWT auth.",
       ],
       liveUrl: "https://forgefort.vercel.app/",
-      repoUrl: "[[PLACEHOLDER]]",
+      repoUrl: "https://github.com/kaustubh-web/Forge-Fort",
       media: media("forgefort"),
       caseStudy: {
         ...pendingCaseStudy,
@@ -385,7 +385,7 @@ router.get("/runs/:id/stream", requireAuth, (req, res) => {
         "A Node.js orchestration layer combines the ML output with Gemini insights and shows projected revenue impact on a React dashboard.",
       ],
       liveUrl: "https://price-optimizer-tau.vercel.app/",
-      repoUrl: "[[PLACEHOLDER]]",
+      repoUrl: "https://github.com/kaustubh-web/Price-optimizer",
       media: media("price-optimizer"),
       caseStudy: {
         ...pendingCaseStudy,
@@ -443,7 +443,7 @@ export async function recommend(productId: string) {
         "Queries optimized with MongoDB indexes and aggregations.",
       ],
       liveUrl: "https://support-ticket-rho.vercel.app/",
-      repoUrl: "[[PLACEHOLDER]]",
+      repoUrl: "https://github.com/kaustubh-web/Support-ticket",
       media: media("ticket-tracker"),
       caseStudy: {
         ...pendingCaseStudy,
@@ -499,7 +499,7 @@ app.use(errorHandler);`,
         "Multi-document transactions plus idempotency keys block duplicate transfers.",
         "JWT-secured API.",
       ],
-      repoUrl: "[[PLACEHOLDER]]",
+      repoUrl: "https://github.com/kaustubh-web/Backend-Ledger",
       media: media("backend-ledger"),
       caseStudy: {
         ...pendingCaseStudy,
