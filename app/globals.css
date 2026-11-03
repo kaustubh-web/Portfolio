@@ -844,3 +844,17 @@
     clip-path: inset(0 0 100% 0);
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Homepage sections (components/sections/: principles … contact).
+ * Principle cards reuse the case-study snippet, one step smaller.
+ * ------------------------------------------------------------------ */
+.code-snippet[data-size="compact"] pre {
+  padding-block: var(--space-3);
+  font-size: var(--text-meta);
+}
+
+.code-snippet[data-size="compact"] .line::before {
+  width: 2ch;
+  margin-right: 1.5ch;
+}

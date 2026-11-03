@@ -19,3 +19,6 @@ export function resolveMedia(media: Project["media"]): ResolvedMedia {
     Object.entries(media).filter(([, src]) => inPublic(src)),
   ) as ResolvedMedia;
 }
+
+/** Server-only. `src` when that file exists in public/, else undefined. */
+export const resolveAsset = (src: string): string | undefined => (inPublic(src) ? src : undefined);

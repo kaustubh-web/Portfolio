@@ -5,7 +5,7 @@
 - [x] Phase 2 — Preloader + Hero + Marquee
 - [x] Phase 3 — Selected Work
 - [x] Phase 4 — Case Studies
-- [ ] Phase 5 — Remaining Sections
+- [x] Phase 5 — Remaining Sections
 - [ ] Phase 6 — Signature Interactions
 - [ ] Phase 7 — Polish & Ship
 
@@ -189,3 +189,57 @@ Each phase appends one block, newest last:
 - Placeholders added:
   - Snippet code ×5 replaced with illustrative code, still marked `[[REPLACE WITH REAL CODE]]` on line 1 (forgefort `engine/kahn.ts`, `engine/stream.ts`; price-optimizer `api/recommend.ts`; ticket-tracker `middleware/validate.ts`; backend-ledger `services/transfer.ts`).
   - Now visible on every case study: `role`, `problem`, `approach`, `hardParts`, `result` (×4 each, rendered as a dashed `[[PLACEHOLDER]] · <field>` block), `repoUrl` ×4, preview media ×4 (tokened poster).
+
+### Phase 5 — Remaining Sections (2026-11-03)
+- Built:
+  - 02 / PRINCIPLES: sticky title column (cols 1–4, "How I / build") beside four principle cards (P.0N, title, summary, Shiki snippet highlighted on the server). One column below 1440px, 2×2 from `xl`.
+  - 03 / ARCHIVE: rows year · name · stack · link on the 12/8/4 grid (mobile: year + link on top, then name, then stack). With a fine pointer and motion allowed, hovering a row shows a 4:3 preview that follows the cursor on `spring.preview`. It sits right of the cursor, flips left near the edge and stays on screen vertically. Layers mount on the first hover, and a missing image shows a tokened poster (index + name).
+  - 04 / EDUCATION: degree (display-l) beside a school / period / coursework list, then certifications as a timeline: 64px mono date column, accent square on a hairline rule, title, issuer. No grades anywhere.
+  - 05 / NOW: key → value table with the live IST clock and the `updated` stamp in the label row. The `live` status row carries the pulsing status dot. Mobile shows the key above the value.
+  - 06 / CONTACT + footer: the email as a display-xl button. Click copies it (existing `copyEmail` toast). Hover or focus scrambles it left to right in 640ms, accent glyphs that settle to ink. Each glyph sits in a cell sized by the real character, so there is zero layout shift. Phones break the address only before "@". Below it: click/tap-to-copy hint, magnetic GitHub / LinkedIn / LeetCode / Resume ↗, back to top ↑, location · IST, built-with, ©, terminal hint (hidden on coarse pointers). No phone number.
+  - Removed the Phase 1 `SectionShell` scaffold; every homepage section is now real.
+- Verified (headless Chrome via CDP, dev, plus the production build):
+  - Zero console errors or warnings.
+  - No horizontal overflow at 360, 768, 1024, 1280, 1440.
+  - Every tap target in the new sections is ≥ 44px.
+  - Light theme checked.
+  - Archive preview: hidden before hover, shows the hovered row's layer, follows the cursor, flips at the right edge, hides on leaving the list. Not rendered under reduced motion.
+  - Email: scramble runs and settles with CLS 0 and unchanged button size. Click → "email copied" toast and the clipboard holds the address. Reduced motion: no scramble, copy still works.
+  - Back to top lands at y 0.
+  - Principle snippets don't scroll horizontally at ≥ 768. At 360 they scroll inside their box (the wireframe allows it).
+  - Cert date column is exactly 64px with no overflow.
+  - `npm run build` (from PowerShell), `npm run lint`, `npx tsc --noEmit` are clean, and `/` still prerenders static.
+- Acceptance grep for the four banned strings (all files, excluding node_modules/.next/.git):
+  - Zero hits in code, content, components or rendered HTML.
+  - The only hits are the rule text itself in CLAUDE.md, docs/SPEC.md and docs/PLAN.md (including the acceptance line). They were left as-is because they define the rule.
+  - The served `/` HTML has 0 matches.
+- Key files:
+  - `components/sections/principles.tsx`, `archive.tsx`, `education.tsx`, `now.tsx`, `contact.tsx` (all server).
+  - `components/archive/archive-list.tsx` (client: rows + cursor-follow `Preview`).
+  - `components/contact/contact-email.tsx` (client: copy button + scramble).
+  - `lib/media.ts`: new `resolveAsset(src)` (server-only; `src` if the file is in public/, else undefined).
+  - `content/site.ts`:
+    - `Section.titleLines?` (explicit reveal lines; principles uses it).
+    - `footer.year`.
+    - Principle snippets rewrapped to ≤ 40 chars per line.
+  - `app/globals.css`: new "Homepage sections" block (`.code-snippet[data-size="compact"]`).
+- Conventions introduced:
+  - A section whose big heading isn't the section title (education, now, contact) uses the `label-meta` line as its `<h2>` (`aria-labelledby` points at it). The display text is an `<h3>` or a control.
+  - Unknown content values render visibly as mono `[[PLACEHOLDER]]` in `--fg-muted` (archive `Value`, Now rows), never hidden.
+  - Rows with a placeholder `href` render unlinked with a muted `—` in place of `↗`. Real hrefs get a stretched link (`after:absolute after:inset-0`) with `data-cursor="open"`.
+  - Nested grids that must align to page columns override `--grid-cols` locally (`[--grid-cols:4] md:[--grid-cols:8] lg:[--grid-cols:10]` in Now).
+  - Watch Tailwind ordering: a later-breakpoint `col-span-*` resets `grid-column` start, so repeat `lg:col-start-*` with it.
+  - Data-cursor labels added for Phase 6: archive links `open`, contact links `open`, email `copy`.
+  - Principle snippets: keep lines ≤ 40 characters (comment in content).
+- Known issues:
+  - Archive preview doesn't follow keyboard focus (pointer only, per spec "desktop only").
+  - Archive preview follows on pointer events, so scrolling with a still mouse updates it only when the browser sends its synthetic pointer events.
+  - The email glyph cells are inline-blocks, so the headline loses kerning between letters. It isn't visible in Instrument Serif at this size, but worth knowing.
+  - Scramble glyphs can overflow their cell slightly (narrow cells like "l" or "."). By design, no layout effect.
+  - "press ~ for a terminal" is shown, but the terminal arrives in Phase 6.
+  - Footer socials and Resume share the hero's pending targets (placeholder hrefs → 404; resume PDF not in `public/`).
+  - Phase 6 also needs to bind `[data-cursor]` on the new elements.
+- Placeholders added: none new in content. Now visible on the homepage:
+  - archive `year` ×5, `href` ×5 (rows unlinked), Smart Resume Screener `stack`
+  - Now `building`, `learning`, `updated`
+  - archive preview images `/public/archive/{event-booking,creator-intelligence,resume-screener,ambulance-routing,nodejs-course}.webp` (tokened poster until present; rebuild after adding)

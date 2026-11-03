@@ -44,6 +44,8 @@ export type Section = {
   index: string | null;
   label: string;
   title: string;
+  /** Explicit line breaks for the title's masked reveal; defaults to one line. */
+  titleLines?: string[];
   /** Shown in the navbar. */
   nav: boolean;
 };
@@ -147,7 +149,7 @@ export type Site = {
   education: Education;
   certifications: Certification[];
   now: Now;
-  footer: { builtWith: string; terminalHint: string; version: string };
+  footer: { builtWith: string; terminalHint: string; version: string; year: string };
   terminal: { prompt: string; whoami: string };
 };
 
@@ -206,7 +208,7 @@ export const site: Site = {
     { id: "index", index: "00", label: "Index", title: "Kaustubh Bramhe", nav: false },
     { id: "stack", index: null, label: "Stack", title: "Stack", nav: false },
     { id: "work", index: "01", label: "Work", title: "Selected Work", nav: true },
-    { id: "principles", index: "02", label: "Principles", title: "How I build", nav: true },
+    { id: "principles", index: "02", label: "Principles", title: "How I build", titleLines: ["How I", "build"], nav: true },
     { id: "archive", index: "03", label: "Archive", title: "Archive", nav: true },
     { id: "education", index: "04", label: "Education", title: "Education", nav: false },
     { id: "now", index: "05", label: "Now", title: "Now", nav: false },
@@ -549,6 +551,7 @@ export async function transfer({ key, from, to, amount }: TransferInput) {
   ],
 
   // Snippets are short illustrations of each principle — edit freely.
+  // Keep lines ≤ 40 characters so they fit a card without scrolling.
   principles: [
     {
       id: "P.01",
@@ -556,9 +559,11 @@ export async function transfer({ key, from, to, amount }: TransferInput) {
       summary: "Duplicate requests are not duplicate charges.",
       snippet: {
         lang: "ts",
-        code: `const prior = await Transfer.findOne({ key }).session(session);
-if (prior) return prior; // replay, don't re-charge
-return Transfer.create([{ key, ...body }], { session });`,
+        code: `const done = await Ops.findOne({ key });
+if (done) return done.result; // replay
+const result = await charge(body);
+await Ops.create({ key, result });
+return result;`,
       },
     },
     {
@@ -567,9 +572,11 @@ return Transfer.create([{ key, ...body }], { session });`,
       summary: "Zod at the edge, schema at the DB.",
       snippet: {
         lang: "ts",
-        code: `const Ticket = z.object({ title: z.string().min(3) });
-const input = Ticket.parse(req.body); // edge
-await TicketModel.create(input);      // schema, again`,
+        code: `const Ticket = z.object({
+  title: z.string().min(3),
+});
+const input = Ticket.parse(req.body);
+await TicketDoc.create(input); // schema`,
       },
     },
     {
@@ -579,9 +586,10 @@ await TicketModel.create(input);      // schema, again`,
       snippet: {
         lang: "ts",
         code: `const url = new URL(input);
-if (url.protocol !== "https:") throw new Blocked("scheme");
-const { address } = await dns.lookup(url.hostname);
-if (isPrivate(address)) throw new Blocked("host");`,
+if (url.protocol !== "https:")
+  throw new Blocked("scheme");
+const ip = await resolve(url.hostname);
+if (isPrivate(ip)) throw new Blocked(ip);`,
       },
     },
     {
@@ -590,10 +598,12 @@ if (isPrivate(address)) throw new Blocked("host");`,
       summary: "State is computed from immutable events.",
       snippet: {
         lang: "ts",
-        code: `const [{ balance }] = await Entry.aggregate([
+        code: `const [row] = await Entry.aggregate([
   { $match: { account: id } },
-  { $group: { _id: null, balance: { $sum: "$amount" } } },
-]);`,
+  { $group: { _id: null,
+    balance: { $sum: "$amount" } } },
+]);
+return row?.balance ?? 0; // derived`,
       },
     },
   ],
@@ -663,6 +673,7 @@ if (isPrivate(address)) throw new Blocked("host");`,
     builtWith: "Built with Next.js, GSAP, Motion",
     terminalHint: "press ~ for a terminal",
     version: "v1 · 2026",
+    year: "2026",
   },
 
   terminal: {

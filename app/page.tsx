@@ -1,7 +1,11 @@
-import { SectionShell } from "@/components/sections/section-shell";
 import { Hero } from "@/components/sections/hero";
 import { StackBand } from "@/components/sections/stack-band";
 import { Work } from "@/components/sections/work";
+import { Principles } from "@/components/sections/principles";
+import { Archive } from "@/components/sections/archive";
+import { Education } from "@/components/sections/education";
+import { Now } from "@/components/sections/now";
+import { Contact } from "@/components/sections/contact";
 
 export default function Home() {
   return (
@@ -9,12 +13,11 @@ export default function Home() {
       <Hero />
       <StackBand />
       <Work />
-
-      <SectionShell id="principles" phase={5} />
-      <SectionShell id="archive" phase={5} />
-      <SectionShell id="education" phase={5} />
-      <SectionShell id="now" phase={5} />
-      <SectionShell id="contact" phase={5} />
+      <Principles />
+      <Archive />
+      <Education />
+      <Now />
+      <Contact />
     </main>
   );
 }
